@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prescrição — Populações Especiais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F8F7; --paper:#FFFFFF; --ink:#16302B; --muted:#5E726D; --line:#DCE6E3;
+  --sage:#2E7A67; --sage-2:#5FA38F; --sage-soft:#E3F0EC;
+  --amber:#9A6414; --amber-soft:#FBF1DF; --red:#A8352A; --red-soft:#F8E4E0;
+  --r-lg:18px; --r-sm:10px;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --text:"Instrument Sans", "Segoe UI", system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--text);font-size:16px;line-height:1.5}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 80px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px}
+.brand{font-family:var(--display);font-weight:700;font-size:15px;color:var(--sage);letter-spacing:.02em}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,5vw,40px);line-height:1.08;margin:6px 0 8px;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:60ch;margin:0}
+section.block{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 22px 18px;margin-bottom:16px}
+section.block h2{font-family:var(--display);font-weight:500;font-size:20px;margin:0 0 4px}
+section.block .hint{color:var(--muted);font-size:14px;margin:0 0 16px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c6{grid-column:span 6}.c4{grid-column:span 4}.c3{grid-column:span 3}
+@media(max-width:640px){.c8,.c6,.c4{grid-column:span 12}.c3{grid-column:span 6}}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}
+input,select{width:100%;font:inherit;color:var(--ink);background:#FBFCFC;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;min-height:44px}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:3px solid rgba(46,122,103,.28);outline-offset:1px;border-color:var(--sage)}
+.req::after{content:" *";color:var(--red)}
+.conn-btn{font:inherit;font-size:13.5px;font-weight:500;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.conn-btn .dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.conn-btn .dot.on{background:var(--sage)}.conn-btn .dot.off{background:var(--amber)}
+#connPanel{display:none}#connPanel.open{display:block}
+.conn-status{font-size:14px;border-radius:var(--r-sm);padding:10px 14px;margin-top:12px}
+.conn-status.ok{background:var(--sage-soft);color:var(--sage)}
+.conn-status.warn{background:var(--amber-soft);color:var(--amber)}
+.conn-status.bad{background:var(--red-soft);color:var(--red)}
+.autofill{display:none;margin-top:10px;font-size:13px;color:var(--sage);background:var(--sage-soft);border-radius:999px;padding:4px 12px;width:max-content}
+.autofill.show{display:inline-block}
+
+.group-title{font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:14px;border:1px solid var(--line);background:#FBFCFC;color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--sage);border-color:var(--sage);color:#fff}
+.specific{margin-top:18px;display:grid;gap:12px}
+.specific .card{border:1px dashed var(--line);border-radius:var(--r-sm);padding:14px}
+.specific .card h3{font-size:15px;margin:0 0 10px;font-weight:600}
+
+.toggle{display:flex;gap:8px;flex-wrap:wrap}
+.toggle button{font:inherit;border:1px solid var(--line);background:#FBFCFC;border-radius:var(--r-sm);padding:9px 16px;cursor:pointer;min-height:44px}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hidden{display:none!important}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{font:inherit;font-weight:600;border-radius:12px;padding:12px 20px;cursor:pointer;border:1px solid transparent;min-height:48px}
+.btn.primary{background:var(--sage);color:#fff}
+.btn.primary:hover{background:#276958}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--red);font-size:14px;margin-top:10px;min-height:1em}
+
+/* ---------- Relatório ---------- */
+#report{margin-top:28px}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:28px 26px;animation:rise .35s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.sheet{animation:none}}
+.sheet-head{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+.sheet-head h2{font-family:var(--display);font-size:26px;margin:0 0 2px;font-weight:700}
+.meta{font-size:14px;color:var(--muted)}
+.meta strong{color:var(--ink);font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:13px;background:var(--sage-soft);color:var(--sage);border-radius:999px;padding:3px 10px}
+.alert{border-radius:var(--r-sm);padding:11px 14px;margin-bottom:8px;font-size:14.5px}
+.alert.red{background:var(--red-soft);color:var(--red)}
+.alert.amber{background:var(--amber-soft);color:var(--amber)}
+h3.sec{font-family:var(--display);font-weight:500;font-size:19px;margin:26px 0 10px}
+
+/* Faixa de FC — elemento principal */
+.hr{border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
+.hr-top{display:flex;flex-wrap:wrap;gap:22px;align-items:baseline}
+.hr-big{font-family:var(--display);font-weight:700;font-size:48px;line-height:1;color:var(--ink)}
+.hr-big small{font-size:16px;font-weight:500;color:var(--muted);margin-left:4px}
+.hr-note{font-size:14px;color:var(--muted);max-width:52ch}
+.ribbon{position:relative;height:54px;margin:26px 0 30px}
+.ribbon .base{position:absolute;inset:18px 0;border-radius:999px;background:repeating-linear-gradient(90deg,#EDF2F0 0 6px,#E4EBE8 6px 7px)}
+.ribbon .zone{position:absolute;top:12px;height:30px;border-radius:999px}
+.ribbon .z1{background:#CFE5DD}.ribbon .z2{background:var(--sage-2)}.ribbon .z3{background:var(--sage)}
+.ribbon .lbl{position:absolute;top:-6px;font-size:12px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.ribbon .lbl.b{top:46px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:#F1F6F4;font-weight:600;font-size:13px;color:var(--muted)}
+tbody th{font-weight:600;white-space:nowrap}
+tr:last-child td,tr:last-child th{border-bottom:none}
+
+details.cond{border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px;background:#FCFDFD}
+details.cond summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.cond summary::-webkit-details-marker{display:none}
+details.cond summary::after{content:"+";color:var(--muted);font-weight:500}
+details.cond[open] summary::after{content:"–"}
+.cond-body{padding:0 14px 14px;font-size:14.5px}
+.cond-body dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:0 0 10px}
+.cond-body dt{color:var(--muted);font-weight:600}
+.cond-body dd{margin:0}
+.cond-body ul{margin:6px 0 0;padding-left:18px}
+.risk{font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;align-self:center}
+.risk.r1{background:var(--sage-soft);color:var(--sage)}.risk.r2{background:var(--amber-soft);color:var(--amber)}.risk.r3{background:var(--red-soft);color:var(--red)}
+.refs{font-size:13px;color:var(--muted);columns:2 280px;column-gap:28px;padding-left:18px}
+.refs li{break-inside:avoid;margin-bottom:4px}
+.disclaimer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);margin-top:22px;padding-top:14px}
+.sign{margin-top:26px;font-size:14px}
+.sign .line{border-top:1px solid var(--ink);width:260px;margin-top:40px;padding-top:6px}
+.report-actions{margin-top:18px}
+.btn.sm{padding:7px 14px;min-height:36px;font-size:13.5px;font-weight:500}
+.method{border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;margin-top:12px;font-size:14.5px;background:#FCFDFD}
+.method dl{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;margin:8px 0 0}
+.method dt{color:var(--muted);font-weight:600}
+.method dd{margin:0}
+.chip[disabled]{opacity:.4;cursor:not-allowed}
+.chip .why{font-size:11px;display:block;color:inherit;opacity:.85}
+.ex-eq{color:var(--muted);font-size:13px;display:block}
+.swap-msg{color:var(--amber);font-size:13px}
+.dash{border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;background:#FCFDFD}
+.dash-row{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.dash-row .lbl{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#fff}
+.seg button{font:inherit;font-size:13.5px;border:none;background:transparent;padding:8px 14px;cursor:pointer;min-height:38px;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--sage);color:#fff}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.stat{background:var(--sage-soft);border-radius:12px;padding:8px 14px;min-width:96px}
+.stat b{display:block;font-family:var(--display);font-size:20px;font-weight:700;color:var(--sage);line-height:1.15}
+.stat span{font-size:12px;color:var(--muted)}
+.acts{white-space:nowrap}
+.acts .btn{margin:2px 4px 2px 0}
+.exname{font:inherit;font-weight:600;color:var(--ink);background:none;border:none;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+tr.dicaRow td{background:#F4F8F7;font-size:14px;color:var(--muted);padding-top:6px}
+tr.fixed td{background:#F6FBF9}
+.ico{width:22px;height:22px;flex:none;vertical-align:-5px}
+.ico.sm{width:17px;height:17px;vertical-align:-3px}
+.padcell{display:flex;align-items:center;gap:9px}
+.padcell .ico{color:var(--sage)}
+.excell{display:flex;gap:9px;align-items:flex-start}
+.excell .ico{color:var(--muted);margin-top:2px}
+.niv{display:inline-flex;gap:3px;margin-left:2px;vertical-align:1px}
+.niv i{width:5px;height:5px;border-radius:50%;background:var(--line)}
+.niv i.on{background:var(--sage-2)}
+.stat{display:flex;gap:10px;align-items:center}
+.stat .ico{color:var(--sage)}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:520px}
+.phase{text-align:left;font:inherit;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;min-height:84px}
+.phase[aria-pressed="true"]{border-color:var(--sage);background:var(--sage-soft);box-shadow:inset 0 0 0 1px var(--sage)}
+.phase .pw{font-size:11px;color:var(--muted);display:block}
+.phase strong{display:block;font-size:14px;margin:1px 0 7px}
+.phase .pbar{display:block;height:6px;border-radius:999px;background:#E9F0ED;overflow:hidden}
+.phase .pbar i{display:block;height:100%;background:var(--sage-2);border-radius:999px}
+.phase[aria-pressed="true"] .pbar i{background:var(--sage)}
+.phase .pv{display:block;font-size:11.5px;color:var(--muted);margin-top:6px}
+.week{display:flex;gap:5px}
+.day{flex:1 1 0;min-width:0;border:1px solid var(--line);border-radius:12px;background:#fff;padding:7px 4px;text-align:center}
+.day b{display:block;font-size:10.5px;color:var(--muted);font-weight:600}
+.day .marks{display:flex;justify-content:center;gap:3px;margin-top:4px;min-height:20px}
+.day .marks .ico{width:16px;height:16px}
+.day .f{color:var(--sage)}.day .a{color:var(--amber)}
+.day.off{background:#F7F9F8;opacity:.65}
+.graphs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:640px){.graphs{grid-template-columns:1fr}.phases{grid-template-columns:1fr}}
+.gcard{border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;background:#fff}
+.gcard h4{margin:0 0 10px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em;text-transform:uppercase}
+.bodymap{width:100%;max-width:300px;display:block;margin:0 auto}
+.bars{display:grid;gap:7px}
+.bar-row{display:grid;grid-template-columns:96px 1fr 42px;gap:8px;align-items:center;font-size:13px}
+.bar-track{height:9px;background:#EDF2F0;border-radius:999px;overflow:hidden}
+.bar-track i{display:block;height:100%;border-radius:999px;background:var(--sage-2)}
+.bar-row.alt .bar-track i{background:var(--amber)}
+.legend-grad{height:8px;border-radius:999px;background:linear-gradient(90deg,#EBF1EF,var(--sage));margin-top:10px}
+.saved{font-size:14px;color:var(--sage);margin-top:10px;min-height:1em}
+
+@media print{
+  body{background:#fff}
+  .wrap{padding:0;max-width:none}
+  header.top,#form,.report-actions,.saved,.acts{display:none!important}
+  .phase{min-height:0}.dash{break-inside:avoid}.graphs{break-inside:avoid}
+  tr.dicaRow td{background:#fff}
+  .sheet{border:none;padding:0;animation:none}
+  details.cond{break-inside:avoid}
+  details.cond .cond-body{display:block!important}
+  .refs{columns:2}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">R3H2B</div>
+      <h1>Prescrição de exercício para populações especiais</h1>
+      <p class="lede">Estratégia macro de volume, intensidade, tempo sob tensão e descanso, conforme ACSM, sociedades europeias e diretrizes brasileiras.</p>
+    </div>
+    <button class="conn-btn" id="connBtn" type="button"><span class="dot" id="connDot"></span>Conexão</button>
+  </header>
+
+  <section class="block" id="connPanel">
+    <h2>Conexão com o banco de dados</h2>
+    <p class="hint" id="connHint"></p>
+    <div class="grid">
+      <div class="c6"><label for="connAdmin">WhatsApp que recebe cópia das solicitações (opcional)</label><input id="connAdmin" inputmode="tel" placeholder="(48) 99999-9999"></div>
+      <div class="c6"><label for="connAdminNome">Nome de quem recebe a cópia</label><input id="connAdminNome" placeholder="R3H2B"></div>
+    </div>
+    <div class="actions"><button class="btn primary" id="connSave" type="button">Salvar e testar</button>
+      <button class="btn ghost" id="connClose" type="button">Fechar</button></div>
+    <div class="conn-status" id="connStatus" style="display:none"></div>
+  </section>
+
+  <div id="form">
+    <section class="block">
+      <h2>Profissional</h2>
+      <p class="hint">Seus dados ficam salvos neste aparelho e no cadastro da R3H2B. Na próxima vez, basta o WhatsApp.</p>
+      <div class="grid">
+        <div class="c4"><label class="req" for="p_wa">WhatsApp</label><input id="p_wa" inputmode="tel" placeholder="(48) 99999-9999" autocomplete="tel"></div>
+        <div class="c8"><label class="req" for="p_nome">Nome completo</label><input id="p_nome" autocomplete="name"></div>
+        <div class="c6"><label class="req" for="p_conselho">Conselho</label>
+          <select id="p_conselho">
+            <option value="">Selecione</option>
+            <option value="CRM">CRM — Medicina</option>
+            <option value="CREFITO (Fisioterapia)">CREFITO — Fisioterapia</option>
+            <option value="CREFITO (Terapia Ocupacional)">CREFITO — Terapia Ocupacional</option>
+            <option value="CREF">CREF — Educação Física e Esportes</option>
+          </select></div>
+        <div class="c3"><label class="req" for="p_reg">Nº de registro</label><input id="p_reg"></div>
+        <div class="c3"><label class="req" for="p_uf">UF</label><select id="p_uf"></select></div>
+      </div>
+      <span class="autofill" id="autofillMsg">Cadastro encontrado e preenchido</span>
+    </section>
+
+    <section class="block">
+      <h2>Cliente</h2>
+      <p class="hint">Idade e FC de repouso são necessárias para calcular FCmáx e zonas de treino.</p>
+      <div class="grid">
+        <div class="c8"><label class="req" for="c_nome">Nome do cliente</label><input id="c_nome"></div>
+        <div class="c4"><label for="c_sexo">Sexo</label><select id="c_sexo"><option value="">—</option><option>Feminino</option><option>Masculino</option></select></div>
+        <div class="c3"><label class="req" for="c_idade">Idade (anos)</label><input id="c_idade" type="number" min="10" max="110"></div>
+        <div class="c3"><label for="c_peso">Peso (kg)</label><input id="c_peso" type="number" step="0.1"></div>
+        <div class="c3"><label for="c_alt">Altura (cm)</label><input id="c_alt" type="number"></div>
+        <div class="c3"><label for="c_fcrep">FC repouso (bpm)</label><input id="c_fcrep" type="number" min="30" max="140"></div>
+        <div class="c3"><label for="c_pas">PA sistólica</label><input id="c_pas" type="number" placeholder="mmHg"></div>
+        <div class="c3"><label for="c_pad">PA diastólica</label><input id="c_pad" type="number" placeholder="mmHg"></div>
+        <div class="c6"><label for="c_te">FC pico em teste ergométrico / TCPE recente (opcional)</label><input id="c_te" type="number" placeholder="bpm, com a medicação atual"></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Condições clínicas</h2>
+      <p class="hint">Selecione uma ou mais. Com múltiplas condições, a síntese adota o limite mais conservador de cada variável.</p>
+      <div id="condGroups"></div>
+      <div class="specific" id="specific"></div>
+    </section>
+
+    <section class="block">
+      <h2>Modalidade e técnica</h2>
+      <p class="hint">A modalidade define a linguagem do treino e o repertório de exercícios. As incompatíveis com o quadro clínico ficam bloqueadas, com o motivo.</p>
+      <div class="chips" id="modalidades"></div>
+      <p class="hint" id="modNota" style="margin:14px 0 0"></p>
+      <div id="tecWrap" style="margin-top:20px">
+        <div class="group-title">Técnica de séries</div>
+        <div class="chips" id="metodos"></div>
+        <p class="hint" id="metodoNota" style="margin:14px 0 0"></p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Medicação com efeito na frequência cardíaca</h2>
+      <p class="hint">O betabloqueador reduz a FC máxima de forma dose-dependente. Informe o fármaco e a dose diária total.</p>
+      <div class="toggle" role="group" aria-label="Usa betabloqueador?">
+        <button type="button" id="bbNo" aria-pressed="true">Não usa betabloqueador</button>
+        <button type="button" id="bbYes" aria-pressed="false">Usa betabloqueador</button>
+      </div>
+      <div class="grid hidden" id="bbFields" style="margin-top:14px">
+        <div class="c6"><label for="bb_drug">Fármaco</label><select id="bb_drug"></select></div>
+        <div class="c3"><label for="bb_dose">Dose total (mg/dia)</label><input id="bb_dose" type="number" step="0.125"></div>
+        <div class="c3"><label for="bb_ref">Dose-alvo (mg/dia)</label><input id="bb_ref" type="number" readonly></div>
+      </div>
+      <div class="grid" style="margin-top:14px">
+        <div class="c12"><label for="otherChrono">Outros cronotrópicos negativos</label>
+          <select id="otherChrono">
+            <option value="">Nenhum</option>
+            <option>Diltiazem</option><option>Verapamil</option><option>Ivabradina</option><option>Digoxina</option><option>Amiodarona</option>
+          </select></div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn primary" id="btnGerar" type="button">Gerar prescrição</button>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </div>
+
+  <div id="report" aria-live="polite"></div>
+</div>
+
+<script>
+/* =========================================================
+   BASE DE PROTOCOLOS
+   aer: %FCR (Karvonen) · aerFreq: dias/sem · aerMin: min/sessão
+   rm: %1RM · series · reps · rest: s entre séries
+   tempo: concêntrica-isometria-excêntrica (s) · risk: 1 baixo, 2 moderado, 3 alto
+   ========================================================= */
+const REF = {
+  acsm: "ACSM's Guidelines for Exercise Testing and Prescription, 12ª ed. (ACSM, 2025)",
+  guiaBR: "Guia de Atividade Física para a População Brasileira (Ministério da Saúde, 2021)",
+  oms: "WHO Guidelines on Physical Activity and Sedentary Behaviour (OMS, 2020)",
+  esc20: "ESC Guidelines on Sports Cardiology and Exercise in Patients with CVD (Pelliccia et al., 2020)",
+  reabBR: "Diretriz Brasileira de Reabilitação Cardiovascular (SBC, 2020)"
+};
+
+const CONDS = [
+ {id:'has', grupo:'Cardiometabólicas', nome:'Hipertensão arterial', risk:2, valsalva:true,
+  aer:[40,65], aerFreq:[5,7], aerMin:[30,60], rm:[60,80], series:[2,4], reps:[8,12], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'Aeróbio contínuo moderado na maioria dos dias; intensidade vigorosa apenas com PA controlada.',
+  forcaTxt:'8–10 exercícios de grandes grupos musculares, respiração contínua.',
+  extra:'Isométrico de preensão manual: 4 × 2 min a 30% da CVM, 1–3 min de intervalo, 3×/sem.',
+  cautelas:['Evitar manobra de Valsalva e isometria máxima prolongada.','Hipotensão pós-exercício com anti-hipertensivos: volta à calma prolongada.','Adiar sessão se PA ≥ 200/110 mmHg; evitar alta intensidade se PA ≥ 160/100 mmHg sem controle.'],
+  fields:[{id:'med',label:'Classe do anti-hipertensivo',type:'select',options:['Não informado','IECA/BRA','Diurético','BCC di-hidropiridínico','Combinação']}],
+  refs:[REF.acsm,'ESC Guidelines for Elevated Blood Pressure and Hypertension (ESC, 2024)',REF.esc20,'Diretrizes Brasileiras de Hipertensão Arterial (SBC/SBH/SBN)']},
+
+ {id:'dm2', grupo:'Cardiometabólicas', nome:'Diabetes tipo 2', risk:2, valsalva:false,
+  aer:[40,70], aerFreq:[3,7], aerMin:[30,60], rm:[50,80], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'≥150 min/sem, sem mais de 2 dias consecutivos sem exercício; interromper o tempo sentado a cada 30 min.',
+  forcaTxt:'2–3 dias não consecutivos, 8–10 exercícios; progredir de 10–15 para 8–10 repetições.',
+  extra:'Exercício pós-prandial (após refeições principais) potencializa o controle glicêmico.',
+  cautelas:['Glicemia capilar antes da sessão; < 70 mg/dL: ingerir 15–20 g de carboidrato e reavaliar.','Insulina ou sulfonilureia: maior risco de hipoglicemia até 24 h após.','Retinopatia proliferativa: evitar Valsalva, alta intensidade e impacto.','Neuropatia periférica: inspecionar os pés e preferir baixo impacto.'],
+  fields:[{id:'gli',label:'Glicemia pré-treino (mg/dL)',type:'number'},{id:'ins',label:'Usa insulina ou sulfonilureia?',type:'select',options:['Não','Sim']},{id:'ret',label:'Retinopatia proliferativa?',type:'select',options:['Não','Sim','Não avaliado']}],
+  alerts:v=>{const a=[];const g=+v.gli;if(g&&g<70)a.push(['red','Glicemia '+g+' mg/dL: hipoglicemia. Corrigir antes de iniciar.']);if(g>250)a.push(['amber','Glicemia '+g+' mg/dL: verificar cetonas/sintomas antes de exercitar.']);if(v.ret==='Sim')a.push(['amber','Retinopatia proliferativa: sem Valsalva, sem alta intensidade.']);if(v.ins==='Sim')a.push(['amber','Insulina/sulfonilureia: monitorar hipoglicemia durante e após.']);return a;},
+  refs:['Kanaley et al. Exercise/Physical Activity in Individuals with T2D: ACSM Consensus Statement (MSSE, 2022)','ADA Standards of Care in Diabetes (edição vigente)','Diretriz da Sociedade Brasileira de Diabetes (edição vigente)',REF.acsm]},
+
+ {id:'dm1', grupo:'Cardiometabólicas', nome:'Diabetes tipo 1', risk:2, valsalva:false,
+  aer:[40,70], aerFreq:[3,7], aerMin:[30,60], rm:[50,75], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'Aeróbio moderado; sprints curtos ou força antes do aeróbio reduzem a queda glicêmica.',
+  forcaTxt:'2–3 dias/sem, grandes grupos musculares.',
+  extra:'Ajuste de insulina e carboidrato combinado com a equipe médica/nutricional.',
+  cautelas:['Glicemia alvo pré-exercício aproximada de 126–180 mg/dL.','> 250 mg/dL com cetonemia elevada: não exercitar.','Hipoglicemia noturna tardia após sessões longas.'],
+  fields:[{id:'gli',label:'Glicemia pré-treino (mg/dL)',type:'number'},{id:'cgm',label:'Usa sensor contínuo (CGM)?',type:'select',options:['Não','Sim']}],
+  alerts:v=>{const a=[];const g=+v.gli;if(g&&g<90)a.push(['red','Glicemia '+g+' mg/dL: abaixo do alvo pré-exercício. Ingerir carboidrato.']);if(g>250)a.push(['red','Glicemia '+g+' mg/dL: checar cetonas; não iniciar se elevadas.']);return a;},
+  refs:['Riddell et al. Exercise management in type 1 diabetes: a consensus statement (Lancet Diabetes Endocrinol, 2017)','ISPAD Clinical Practice Consensus Guidelines','Diretriz da Sociedade Brasileira de Diabetes (edição vigente)']},
+
+ {id:'obe', grupo:'Cardiometabólicas', nome:'Obesidade', risk:1, valsalva:false,
+  aer:[40,70], aerFreq:[5,7], aerMin:[30,60], rm:[60,75], series:[2,4], reps:[8,15], rest:[60,90], tempo:'2-0-2',
+  aerTxt:'150–300 min/sem; > 250 min/sem para perda e manutenção de peso. Baixo impacto no início.',
+  forcaTxt:'Preservação de massa magra durante déficit calórico; 2–3 dias/sem.',
+  extra:'Aumentar atividade física não estruturada (passos diários) como estratégia complementar.',
+  cautelas:['Sobrecarga articular: priorizar bicicleta, elíptico e meio aquático no início.','Termorregulação reduzida: hidratação e ambiente ventilado.'],
+  fields:[],
+  refs:['Oppert et al. Exercise training in the management of overweight and obesity: EASO Physical Activity Working Group (Obes Rev, 2021)',REF.acsm,'Diretrizes Brasileiras de Obesidade (ABESO)']},
+
+ {id:'dlp', grupo:'Cardiometabólicas', nome:'Dislipidemia', risk:1, valsalva:false,
+  aer:[40,75], aerFreq:[5,7], aerMin:[30,60], rm:[60,80], series:[2,3], reps:[8,12], rest:[60,90], tempo:'2-0-2',
+  aerTxt:'Aeróbio moderado a vigoroso com maior gasto energético semanal.',
+  forcaTxt:'2–3 dias/sem, complementar ao aeróbio.',
+  extra:'Volume semanal total (gasto energético) é o principal determinante sobre HDL e triglicerídeos.',
+  cautelas:['Estatinas: investigar mialgia nova ou desproporcional ao esforço.'],
+  fields:[{id:'est',label:'Usa estatina?',type:'select',options:['Não','Sim']}],
+  refs:['ESC/EAS Guidelines for the Management of Dyslipidaemias (com atualização focada vigente)','Diretriz Brasileira de Dislipidemias e Prevenção da Aterosclerose (SBC)',REF.acsm]},
+
+ {id:'dac', grupo:'Cardiorrespiratórias', nome:'Doença coronariana / pós-IAM', risk:3, valsalva:true,
+  aer:[40,70], aerFreq:[3,5], aerMin:[20,60], rm:[30,60], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-1-2',
+  aerTxt:'Abaixo do limiar isquêmico (≥ 10 bpm abaixo da FC de isquemia no TE). Intervalado moderado possível em pacientes estáveis.',
+  forcaTxt:'Iniciar com 30–40% 1RM em membros superiores e 50–60% em inferiores; PSE 11–13.',
+  extra:'Aquecimento e volta à calma de 5–10 min obrigatórios.',
+  cautelas:['Interromper com angina, dispneia desproporcional, tontura ou arritmia.','Pós-esternotomia: evitar carga em membros superiores por ~6–8 semanas.','Preferir prescrição baseada em teste ergométrico sob a medicação atual.'],
+  fields:[{id:'isq',label:'FC do limiar isquêmico (bpm)',type:'number'},{id:'fe',label:'FEVE (%)',type:'number'},{id:'mes',label:'Meses desde o evento',type:'number'}],
+  alerts:v=>{const a=[];if(v.mes!==''&&+v.mes<1)a.push(['red','Evento há menos de 1 mês: apenas reabilitação supervisionada (fase II).']);if(v.fe&&+v.fe<40)a.push(['amber','FEVE '+v.fe+'%: aplicar também cautelas de insuficiência cardíaca.']);return a;},
+  refs:[REF.acsm,REF.esc20,'Ambrosetti et al. Secondary prevention through comprehensive cardiovascular rehabilitation (EAPC, Eur J Prev Cardiol, 2021)',REF.reabBR]},
+
+ {id:'ic', grupo:'Cardiorrespiratórias', nome:'Insuficiência cardíaca', risk:3, valsalva:true,
+  aer:[40,60], aerFreq:[3,5], aerMin:[15,45], rm:[30,50], series:[1,2], reps:[10,15], rest:[90,120], tempo:'2-1-2',
+  aerTxt:'Iniciar com 10–15 min e progredir duração antes da intensidade; intervalado de baixo volume em pacientes estáveis.',
+  forcaTxt:'Progressão em 3 etapas: < 30% 1RM (técnica), 30–40% MMSS / 40–60% MMII, até 60% com estabilidade clínica.',
+  extra:'Treino muscular inspiratório a 30% da PImáx, 20–30 min/dia, quando houver fraqueza inspiratória.',
+  cautelas:['NYHA IV ou descompensação recente: contraindicado.','Ganho de peso > 2 kg em 3 dias sugere congestão: suspender e reavaliar.','Monitorar PA, FC, SpO₂ e sinais de baixo débito.'],
+  fields:[{id:'fe',label:'FEVE (%)',type:'number'},{id:'nyha',label:'Classe funcional NYHA',type:'select',options:['I','II','III','IV']}],
+  alerts:v=>{const a=[];if(v.nyha==='IV')a.push(['red','NYHA IV: exercício contraindicado até estabilização clínica.']);if(v.nyha==='III')a.push(['amber','NYHA III: apenas sessões supervisionadas e monitoradas.']);return a;},
+  refs:['ESC Guidelines for Acute and Chronic Heart Failure (ESC, 2021; atualização focada 2023)',REF.acsm,REF.reabBR,'Diretriz Brasileira de Insuficiência Cardíaca (SBC)']},
+
+ {id:'dap', grupo:'Cardiorrespiratórias', nome:'Doença arterial periférica', risk:2, valsalva:false,
+  aer:[40,70], aerFreq:[3,5], aerMin:[30,60], rm:[50,70], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'Caminhada intervalada supervisionada até dor de claudicação moderada a forte (3–4 de 5), pausa até alívio, repetir; mínimo de 12 semanas.',
+  forcaTxt:'Complementar, com ênfase em panturrilha e membros inferiores.',
+  extra:'Registrar distância até início da dor e distância máxima a cada 4 semanas.',
+  cautelas:['Feridas isquêmicas ou dor em repouso: encaminhar ao vascular.','Alta prevalência de DAC associada: triagem cardiológica.'],
+  fields:[{id:'dist',label:'Distância até claudicação (m)',type:'number'}],
+  refs:['ESC Guidelines for Peripheral Arterial and Aortic Diseases (ESC, 2024)','ACC/AHA Guideline for Lower Extremity PAD (2024)',REF.acsm]},
+
+ {id:'dpoc', grupo:'Cardiorrespiratórias', nome:'DPOC', risk:2, valsalva:false,
+  aer:[40,65], aerFreq:[3,5], aerMin:[20,60], rm:[50,70], series:[2,4], reps:[8,12], rest:[90,180], tempo:'2-0-3',
+  aerTxt:'Dosar pela dispneia (Borg CR10 4–6) mais do que pela FC; intervalado quando o contínuo não é tolerado.',
+  forcaTxt:'Expirar na fase de esforço (lábios semicerrados); priorizar quadríceps e cintura escapular.',
+  extra:'Treino muscular inspiratório como adjunto quando PImáx reduzida.',
+  cautelas:['Manter SpO₂ ≥ 88–90%; usar O₂ suplementar conforme prescrição.','Broncodilatador de resgate disponível.','Exacerbação recente: reduzir carga e reavaliar.'],
+  fields:[{id:'spo2',label:'SpO₂ repouso (%)',type:'number'},{id:'o2',label:'Usa O₂ suplementar?',type:'select',options:['Não','Sim']}],
+  alerts:v=>{const a=[];if(v.spo2&&+v.spo2<88)a.push(['red','SpO₂ '+v.spo2+'% em repouso: exercício apenas com O₂ e supervisão.']);return a;},
+  refs:['GOLD — Global Strategy for COPD (relatório vigente)','Spruit et al. ATS/ERS Statement: Pulmonary Rehabilitation (AJRCCM, 2013)',REF.acsm,'Diretrizes da Sociedade Brasileira de Pneumologia e Tisiologia (SBPT)']},
+
+ {id:'asma', grupo:'Cardiorrespiratórias', nome:'Asma', risk:1, valsalva:false,
+  aer:[40,70], aerFreq:[3,5], aerMin:[20,40], rm:[60,75], series:[2,3], reps:[8,12], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'Aquecimento de 10–15 min (período refratário reduz broncoespasmo). Evitar ar frio e seco.',
+  forcaTxt:'Prescrição semelhante à população geral quando a asma está controlada.',
+  extra:'Natação e ambientes aquecidos/úmidos costumam ser bem tolerados.',
+  cautelas:['Broncoespasmo induzido: broncodilatador 15 min antes, conforme prescrição médica.','Asma não controlada: adiar treinos intensos.'],
+  fields:[{id:'ctl',label:'Controle da asma',type:'select',options:['Controlada','Parcialmente controlada','Não controlada']}],
+  alerts:v=>v.ctl==='Não controlada'?[['amber','Asma não controlada: apenas baixa intensidade até ajuste terapêutico.']]:[],
+  refs:['GINA — Global Strategy for Asthma (relatório vigente)','Parsons et al. ATS Guideline: Exercise-induced Bronchoconstriction (2013)',REF.acsm]},
+
+ {id:'drc', grupo:'Cardiorrespiratórias', nome:'Doença renal crônica', risk:2, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[20,60], rm:[60,70], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'150 min/sem de intensidade moderada, ajustado à tolerância; intradialítico na 1ª metade da sessão.',
+  forcaTxt:'2–3 dias/sem; em diálise, treinar em dias sem diálise ou durante ela.',
+  extra:'Evitar carga e aferição de PA no membro da fístula arteriovenosa.',
+  cautelas:['Distúrbios hidroeletrolíticos e fadiga pós-diálise.','Osteodistrofia renal: cuidado com impacto.'],
+  fields:[{id:'dial',label:'Em diálise?',type:'select',options:['Não','Hemodiálise','Diálise peritoneal']}],
+  refs:['KDIGO 2024 Clinical Practice Guideline for CKD',REF.acsm,'Diretrizes da Sociedade Brasileira de Nefrologia (SBN)']},
+
+ {id:'oa', grupo:'Musculoesqueléticas', nome:'Osteoartrite (joelho/quadril)', risk:1, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[20,45], rm:[50,70], series:[1,3], reps:[8,12], rest:[60,120], tempo:'2-1-3',
+  aerTxt:'Baixo impacto (bicicleta, meio aquático, caminhada fracionada).',
+  forcaTxt:'Quadríceps, glúteos e abdutores; excêntrica controlada.',
+  extra:'Treino neuromuscular e de equilíbrio 2–3×/sem.',
+  cautelas:['Modelo de monitoramento da dor: até 5/10 durante e retorno ao basal em 24 h.','Crise inflamatória: reduzir volume, manter mobilidade.'],
+  fields:[{id:'dor',label:'Dor atual (0–10)',type:'number'},{id:'art',label:'Articulação',type:'select',options:['Joelho','Quadril','Mãos','Múltiplas']}],
+  alerts:v=>v.dor&&+v.dor>=7?[['amber','Dor '+v.dor+'/10: priorizar analgesia por exercício leve e mobilidade.']]:[],
+  refs:['Bannuru et al. OARSI Guidelines for Non-surgical Management of Knee, Hip and Polyarticular OA (2019)','Rausch Osthoff et al. EULAR Recommendations for Physical Activity in Inflammatory Arthritis and OA (2018)','ACR/Arthritis Foundation Guideline for OA (2019)',REF.acsm]},
+
+ {id:'op', grupo:'Musculoesqueléticas', nome:'Osteoporose / osteopenia', risk:2, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[30,45], rm:[60,85], series:[2,3], reps:[5,10], rest:[90,180], tempo:'2-1-2',
+  aerTxt:'Aeróbio com descarga de peso; impacto moderado (≈ 50 saltos/dia) se não houver fratura vertebral.',
+  forcaTxt:'Progredir, após familiarização, para 80–85% 1RM supervisionado em padrões com coluna neutra.',
+  extra:'Equilíbrio 2–3×/sem para prevenção de quedas; extensores de tronco.',
+  cautelas:['Evitar flexão de tronco com carga e flexão + rotação.','Fratura vertebral prévia: sem impacto, carga axial progressiva e supervisionada.'],
+  fields:[{id:'fx',label:'Fratura por fragilidade prévia?',type:'select',options:['Não','Sim, vertebral','Sim, outra']}],
+  alerts:v=>v.fx==='Sim, vertebral'?[['amber','Fratura vertebral: sem impacto e sem flexão de tronco com carga.']]:[],
+  refs:['Royal Osteoporosis Society. Strong, Steady and Straight: Exercise and Osteoporosis (2019)','Beck et al. ESSA Position Statement on Exercise for Osteoporosis (2017)','Watson et al. LIFTMOR trial (JBMR, 2018)',REF.acsm]},
+
+ {id:'lomb', grupo:'Musculoesqueléticas', nome:'Lombalgia crônica', risk:1, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[20,45], rm:[50,70], series:[2,3], reps:[10,15], rest:[60,90], tempo:'2-1-2',
+  aerTxt:'Caminhada e aeróbio de baixo impacto como analgesia e recondicionamento.',
+  forcaTxt:'Controle motor e resistência de tronco, progredindo para padrões funcionais com carga.',
+  extra:'Atividade graduada e educação em dor.',
+  cautelas:['Sinais de alerta (déficit neurológico progressivo, alteração esfincteriana, febre, perda de peso): encaminhar.','Dor irradiada: monitorar sintomas neurais.'],
+  fields:[{id:'dor',label:'Dor atual (0–10)',type:'number'}],
+  refs:['WHO Guideline for Non-surgical Management of Chronic Primary Low Back Pain in Adults (OMS, 2023)','NICE NG59 Low Back Pain and Sciatica',REF.acsm]},
+
+ {id:'ar', grupo:'Musculoesqueléticas', nome:'Artrite reumatoide / espondiloartrites', risk:1, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[20,45], rm:[50,70], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-1-2',
+  aerTxt:'Aeróbio moderado regular; meio aquático em fases mais dolorosas.',
+  forcaTxt:'Fortalecimento global com amplitude sem dor.',
+  extra:'Mobilidade diária; espondiloartrite: ênfase em extensão torácica.',
+  cautelas:['Articulações em atividade inflamatória: reduzir carga local.','Corticoterapia prolongada: risco ósseo.'],
+  fields:[],
+  refs:['Rausch Osthoff et al. EULAR Recommendations for Physical Activity in Inflammatory Arthritis and OA (2018)',REF.acsm]},
+
+ {id:'fibro', grupo:'Musculoesqueléticas', nome:'Fibromialgia', risk:1, valsalva:false,
+  aer:[30,55], aerFreq:[2,3], aerMin:[10,30], rm:[40,60], series:[1,2], reps:[8,12], rest:[90,180], tempo:'2-1-2',
+  aerTxt:'Começar com 10 min e progredir lentamente; meio aquático bem tolerado.',
+  forcaTxt:'4–5 exercícios e 1 série no início, progressão gradual.',
+  extra:'Exercício é a única recomendação forte da EULAR 2016.',
+  cautelas:['Evitar picos de volume: exacerbação tardia (24–48 h).'],
+  fields:[{id:'dor',label:'Dor atual (0–10)',type:'number'}],
+  refs:['Macfarlane et al. EULAR Revised Recommendations for Fibromyalgia (2016)',REF.acsm]},
+
+ {id:'idoso', grupo:'Neurológicas e envelhecimento', nome:'Idoso frágil / sarcopenia', risk:2, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[15,45], rm:[40,80], series:[1,3], reps:[6,12], rest:[60,120], tempo:'1-0-3',
+  aerTxt:'Caminhada e cicloergômetro, PSE 12–14.',
+  forcaTxt:'Treino de potência: concêntrica rápida (≤ 1 s) a 40–60% 1RM após base de força.',
+  extra:'Equilíbrio e marcha em todas as sessões (multicomponente).',
+  cautelas:['Risco de quedas: ambiente seguro e supervisão.','Hipotensão ortostática.'],
+  fields:[{id:'vm',label:'Velocidade de marcha (m/s)',type:'number'},{id:'quedas',label:'Queda nos últimos 12 meses?',type:'select',options:['Não','Sim']}],
+  alerts:v=>{const a=[];if(v.vm&&+v.vm<0.8)a.push(['amber','Velocidade de marcha '+v.vm+' m/s: indicativo de desempenho físico reduzido.']);if(v.quedas==='Sim')a.push(['amber','Histórico de quedas: priorizar equilíbrio e força de MMII.']);return a;},
+  refs:['Izquierdo et al. International Exercise Recommendations in Older Adults (ICFSR) (J Nutr Health Aging, 2021)','Cruz-Jentoft et al. EWGSOP2 Sarcopenia Consensus (2019)',REF.acsm]},
+
+ {id:'avc', grupo:'Neurológicas e envelhecimento', nome:'Pós-AVC', risk:2, valsalva:true,
+  aer:[40,60], aerFreq:[3,5], aerMin:[20,60], rm:[50,70], series:[1,3], reps:[8,15], rest:[60,120], tempo:'2-1-2',
+  aerTxt:'Esteira com suporte, cicloergômetro ou ergômetro de braço; PSE 11–14.',
+  forcaTxt:'Bilateral com ênfase no hemicorpo acometido; tarefas funcionais.',
+  extra:'Treino de equilíbrio e orientado à tarefa.',
+  cautelas:['Controle pressórico rigoroso.','Anticoagulação: evitar risco de queda e impacto.'],
+  fields:[{id:'lado',label:'Hemicorpo acometido',type:'select',options:['Direito','Esquerdo','Bilateral']}],
+  refs:['Billinger et al. AHA/ASA Scientific Statement: Physical Activity for Stroke Survivors (2014)',REF.acsm]},
+
+ {id:'park', grupo:'Neurológicas e envelhecimento', nome:'Doença de Parkinson', risk:2, valsalva:false,
+  aer:[50,75], aerFreq:[3,5], aerMin:[30,45], rm:[50,70], series:[2,3], reps:[8,12], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'Aeróbio moderado a vigoroso é seguro e pode atenuar a progressão motora.',
+  forcaTxt:'Extensores de tronco e MMII; movimentos amplos.',
+  extra:'Equilíbrio, agilidade e dupla tarefa na maioria dos dias.',
+  cautelas:['Treinar no período ON da levodopa.','Hipotensão ortostática e freezing: supervisão.'],
+  fields:[{id:'hy',label:'Estágio Hoehn & Yahr',type:'select',options:['1','2','3','4','5']}],
+  alerts:v=>+v.hy>=4?[['amber','Hoehn & Yahr ≥ 4: exercícios sentados/assistidos, alto risco de queda.']]:[],
+  refs:['Schenkman et al. SPARX Trial (JAMA Neurol, 2018)','European Physiotherapy Guideline for Parkinson’s Disease (KNGF/ParkinsonNet, 2014)',REF.acsm]},
+
+ {id:'cancer', grupo:'Outras condições', nome:'Câncer (em tratamento ou sobrevivente)', risk:2, valsalva:false,
+  aer:[40,60], aerFreq:[3,5], aerMin:[20,40], rm:[60,75], series:[2,3], reps:[8,15], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'30 min, 3×/sem, por ≥ 8–12 semanas (benefício em fadiga, ansiedade, depressão e função).',
+  forcaTxt:'2×/sem, 2 séries de 8–15 repetições a ≥ 60% 1RM. Seguro em linfedema com progressão supervisionada.',
+  extra:'Ajustar a carga aos ciclos de quimioterapia (reduzir nos dias de maior toxicidade).',
+  cautelas:['Plaquetas < 50.000: evitar impacto e alta carga.','Neutropenia: evitar ambientes coletivos.','Metástase óssea: evitar carga sobre a lesão e flexão com carga.'],
+  fields:[{id:'fase',label:'Fase',type:'select',options:['Em tratamento','Pós-tratamento']},{id:'plq',label:'Plaquetas (/mm³)',type:'number'},{id:'meta',label:'Metástase óssea?',type:'select',options:['Não','Sim','Não sabe']}],
+  alerts:v=>{const a=[];if(v.plq&&+v.plq<50000)a.push(['red','Plaquetas '+v.plq+': sem impacto e sem alta carga.']);if(v.meta==='Sim')a.push(['amber','Metástase óssea: liberação médica e prescrição individual por sítio.']);return a;},
+  refs:['Campbell et al. Exercise Guidelines for Cancer Survivors: International Roundtable (MSSE, 2019)','Ligibel et al. ASCO Guideline: Exercise, Diet and Weight Management During Cancer Treatment (2022)',REF.acsm]},
+
+ {id:'gest', grupo:'Outras condições', nome:'Gestação', risk:2, valsalva:true,
+  aer:[40,59], aerFreq:[3,7], aerMin:[20,45], rm:[50,70], series:[1,3], reps:[10,15], rest:[60,120], tempo:'2-0-2',
+  aerTxt:'≥ 150 min/sem, intensidade moderada; usar o teste da fala e PSE 12–14.',
+  forcaTxt:'Moderada, sem Valsalva; treino dos músculos do assoalho pélvico.',
+  extra:'Após ~20 semanas, evitar decúbito dorsal prolongado.',
+  cautelas:['Interromper com sangramento, contrações regulares, perda de líquido, dor torácica ou tontura.','Evitar esportes de contato e risco de queda.','Necessária liberação obstétrica.'],
+  fields:[{id:'sem',label:'Idade gestacional (semanas)',type:'number'},{id:'lib',label:'Liberação obstétrica?',type:'select',options:['Sim','Não']}],
+  alerts:v=>v.lib==='Não'?[['red','Sem liberação obstétrica: não iniciar programa.']]:[],
+  refs:['ACOG Committee Opinion 804: Physical Activity and Exercise During Pregnancy and the Postpartum Period (2020)','Mottola et al. Canadian Guideline for Physical Activity throughout Pregnancy (2019)',REF.acsm]},
+
+ {id:'mental', grupo:'Outras condições', nome:'Depressão / ansiedade', risk:1, valsalva:false,
+  aer:[40,75], aerFreq:[3,5], aerMin:[30,45], rm:[50,75], series:[2,3], reps:[8,12], rest:[60,90], tempo:'2-0-2',
+  aerTxt:'Caminhada, corrida e modalidades mistas; maior intensidade associa-se a maior efeito.',
+  forcaTxt:'Força tem efeito antidepressivo independente.',
+  extra:'Priorizar adesão: atividades preferidas e em grupo.',
+  cautelas:['Antidepressivos tricíclicos podem alterar FC e PA.'],
+  fields:[],
+  refs:['Noetel et al. Effect of exercise for depression: systematic review and network meta-analysis (BMJ, 2024)',REF.acsm,REF.oms]}
+];
+
+/* Betabloqueadores: dose-alvo diária usual (mg/dia) */
+const BB = [
+  {n:'Atenolol', ref:100},
+  {n:'Bisoprolol', ref:10},
+  {n:'Carvedilol', ref:50},
+  {n:'Metoprolol (succinato ou tartarato)', ref:200},
+  {n:'Nebivolol', ref:10},
+  {n:'Propranolol', ref:160}
+];
+/* ================= ÍCONES E GRÁFICOS ================= */
+const ICONS = {
+ agachar:'<circle cx="8" cy="4.5" r="2"/><path d="M8 6.8v3.4l4.6 1.8"/><path d="M12.6 12v4.2M10.6 16.2h4.6"/><path d="M8 9l-3 2.4"/><path d="M3 20h18"/>',
+ dobradica:'<circle cx="6" cy="5.5" r="2"/><path d="M7.4 7.2 13 10.6"/><path d="M13 10.6 14.6 20"/><path d="M11 9.4 10 14"/><path d="M3 20h18"/>',
+ empH:'<circle cx="7" cy="5" r="2"/><path d="M7 7v7"/><path d="M7 14 5 20M7 14l2.6 6"/><path d="M7 9h7.5"/><path d="M18 3.5v17"/>',
+ puxH:'<circle cx="7" cy="5" r="2"/><path d="M7 7v7"/><path d="M7 14 5 20M7 14l2.6 6"/><path d="M15.5 9H8.5"/><path d="M11 6.5 8.5 9l2.5 2.5"/>',
+ empV:'<circle cx="12" cy="5" r="2"/><path d="M12 7v7"/><path d="M12 14 9.6 20M12 14l2.4 6"/><path d="m12 8-3.4-3M12 8l3.4-3"/><path d="M6.5 3.5h11"/>',
+ puxV:'<path d="M4 4h16"/><circle cx="12" cy="11" r="2"/><path d="M12 13v5"/><path d="m10.4 9.6-3-5M13.6 9.6l3-5"/><path d="M9.6 20h4.8"/>',
+ core:'<circle cx="4.5" cy="9" r="1.8"/><path d="M6.2 10 20 15"/><path d="M12 12.5 10.5 18M20 15l-1 4"/><path d="M3 20h18"/>',
+ unil:'<circle cx="12" cy="4.5" r="2"/><path d="M12 6.8v5.4"/><path d="M12 12.2 11 20"/><path d="M12 12.2c2.6.4 3.6 2.2 3.4 4.4"/><path d="M9 20h4"/>',
+ pant:'<path d="M7 4v8.5c0 2.6 1.2 3.8 3.4 4.6L17 19.4"/><path d="M7 12.5h5"/><path d="m17 19.4-2.4 1.1"/>',
+ extra:'<path d="M9 11V5.6a1.4 1.4 0 0 1 2.8 0V11"/><path d="M11.8 10.4V4.8a1.4 1.4 0 0 1 2.8 0v5.8"/><path d="M14.6 10.8V7a1.4 1.4 0 0 1 2.8 0v7.4c0 3.4-2.2 5.6-5.4 5.6-3.2 0-5-1.8-5.6-4.4L5 11.4a1.3 1.3 0 0 1 2.2-1.3L9 12.4"/>',
+ ciclico:'<circle cx="6" cy="16.5" r="3.2"/><circle cx="18" cy="16.5" r="3.2"/><path d="m6 16.5 4-7h5l3 7"/><path d="M10 9.5h4.6"/>',
+ /* equipamentos */
+ eqMaquina:'<rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M7.5 8h9M7.5 12h5"/>',
+ eqPolia:'<circle cx="12" cy="5.5" r="2.5"/><path d="M12 8v6"/><rect x="8.5" y="14" width="7" height="5" rx="1.5"/>',
+ eqHalter:'<path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6"/><path d="M7 12h10"/>',
+ eqBarra:'<path d="M3 9.5v5M5.5 8v8M18.5 8v8M21 9.5v5"/><path d="M5.5 12h13"/>',
+ eqKettle:'<path d="M9 8a3 3 0 0 1 6 0"/><path d="M8.6 8h6.8c2 1.4 3 3.6 3 6.2 0 3.2-2.4 5.3-6.4 5.3S5.6 17.4 5.6 14.2c0-2.6 1-4.8 3-6.2Z"/>',
+ eqElastico:'<path d="M3 14c2.5-4 5-4 7.5 0s5 4 7.5 0"/><circle cx="3" cy="14" r="1.4"/><circle cx="21" cy="12" r="1.4"/>',
+ eqCorpo:'<circle cx="12" cy="4.6" r="2.1"/><path d="M12 7v6.5M12 13.5 9.5 20M12 13.5 14.5 20M7.5 9.5h9"/>',
+ eqAgua:'<path d="M3 8c2.6-2 5.4-2 8 0s5.4 2 8 0M3 13c2.6-2 5.4-2 8 0s5.4 2 8 0M3 18c2.6-2 5.4-2 8 0s5.4 2 8 0"/>',
+ eqMola:'<path d="M3 12h2.5"/><path d="M5.5 12c0-2 1-2.6 2-1.4s2 2.8 3 1.4 2-2.8 3-1.4 2 2.8 3 1.4"/><path d="M18.5 12H21"/>',
+ eqCasa:'<path d="M4 10.5 12 4l8 6.5"/><path d="M6 10v9.5h12V10"/><path d="M10.2 19.5V14h3.6v5.5"/>',
+ eqMochila:'<path d="M6 8.5A3.5 3.5 0 0 1 9.5 5h5A3.5 3.5 0 0 1 18 8.5V20H6Z"/><path d="M9.5 5V3.6h5V5"/><path d="M9.5 13h5"/>',
+ eqMao:'<path d="M12 20a6 6 0 0 1-6-6V8.5a1.3 1.3 0 0 1 2.6 0V12"/><path d="M8.6 11V5.4a1.3 1.3 0 0 1 2.6 0V11"/><path d="M11.2 10.6V6a1.3 1.3 0 0 1 2.6 0v5"/><path d="M13.8 11V7.6a1.3 1.3 0 0 1 2.6 0V14a6 6 0 0 1-4.4 6"/>',
+ /* indicadores */
+ iExerc:'<path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6M7 12h10"/>',
+ iSeries:'<path d="M4 19V9M9.3 19V5M14.7 19v-7M20 19v-9"/>',
+ iTut:'<circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.6 1.8M9 2.5h6"/>',
+ iTempo:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.4 2"/>',
+ iSemana:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+ iCoracao:'<path d="M12 20s-7.5-4.6-7.5-9.6A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.5 2.8c0 5-7.5 9.6-7.5 9.6Z"/>',
+ iForca:'<path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6M7 12h10"/>'
+};
+function ico(n, cls){ return `<svg class="ico ${cls||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`; }
+
+const EQ_ICON = {'Máquina':'eqMaquina','Polia':'eqPolia','Halter':'eqHalter','Garrafas':'eqHalter','Barra':'eqBarra','Kettlebell':'eqKettle','Elástico':'eqElastico','Peso corporal':'eqCorpo','Sem equipamento':'eqCasa','Piscina':'eqAgua','Reformer':'eqMola','Cadillac':'eqMola','Chair':'eqMola','Mat':'eqMola','Solo':'eqCorpo','Mochila':'eqMochila','Sacolas':'eqMochila','Handgrip':'eqMao'};
+const eqIco = eq => ico(EQ_ICON[eq] || 'eqCorpo');
+
+/* Mapa corporal: peso de cada padrão sobre as regiões */
+const MAPA = {
+  agachar:{quad:1, glut:.5, core:.3},
+  dobradica:{post:1, glut:.8, lomb:.4},
+  empH:{peito:1, ombro:.5, triceps:.6},
+  puxH:{dorsal:1, biceps:.6, ombro:.3},
+  empV:{ombro:1, triceps:.6, core:.3},
+  puxV:{dorsal:1, biceps:.7},
+  core:{core:1, lomb:.4},
+  unil:{quad:.7, glut:.7, pant:.3, core:.3},
+  pant:{pant:1},
+  extra:{antebraco:.8, ombro:.3, glut:.2}
+};
+const REGIOES = [
+ // frente
+ {r:'ombro',  d:'<ellipse cx="38" cy="45" rx="10" ry="7.5"/><ellipse cx="72" cy="45" rx="10" ry="7.5"/>'},
+ {r:'peito',  d:'<rect x="40" y="44" width="30" height="26" rx="9"/>'},
+ {r:'biceps', d:'<rect x="25" y="52" width="9" height="34" rx="4.5"/><rect x="76" y="52" width="9" height="34" rx="4.5"/>'},
+ {r:'antebraco', d:'<rect x="23" y="88" width="9" height="30" rx="4.5"/><rect x="78" y="88" width="9" height="30" rx="4.5"/>'},
+ {r:'core',   d:'<rect x="42" y="72" width="26" height="33" rx="7"/>'},
+ {r:'quad',   d:'<rect x="39" y="112" width="13" height="44" rx="6.5"/><rect x="58" y="112" width="13" height="44" rx="6.5"/>'},
+ {r:'pant',   d:'<rect x="41" y="160" width="10" height="28" rx="5"/><rect x="59" y="160" width="10" height="28" rx="5"/>'},
+ // costas (deslocado 130 no eixo x)
+ {r:'ombro',  d:'<ellipse cx="168" cy="45" rx="10" ry="7.5"/><ellipse cx="202" cy="45" rx="10" ry="7.5"/>', back:1},
+ {r:'dorsal', d:'<rect x="170" y="44" width="30" height="30" rx="8"/>', back:1},
+ {r:'triceps',d:'<rect x="155" y="52" width="9" height="34" rx="4.5"/><rect x="206" y="52" width="9" height="34" rx="4.5"/>', back:1},
+ {r:'antebraco', d:'<rect x="153" y="88" width="9" height="30" rx="4.5"/><rect x="208" y="88" width="9" height="30" rx="4.5"/>', back:1},
+ {r:'lomb',   d:'<rect x="172" y="76" width="26" height="20" rx="6"/>', back:1},
+ {r:'glut',   d:'<rect x="169" y="98" width="32" height="20" rx="9"/>', back:1},
+ {r:'post',   d:'<rect x="169" y="120" width="13" height="38" rx="6.5"/><rect x="188" y="120" width="13" height="38" rx="6.5"/>', back:1},
+ {r:'pant',   d:'<rect x="171" y="160" width="10" height="28" rx="5"/><rect x="189" y="160" width="10" height="28" rx="5"/>', back:1}
+];
+const NOMES_REG = {ombro:'Ombros', peito:'Peitoral', biceps:'Bíceps', triceps:'Tríceps', antebraco:'Antebraços', core:'Abdômen', dorsal:'Dorsais', lomb:'Lombar', glut:'Glúteos', quad:'Quadríceps', post:'Posteriores', pant:'Panturrilhas'};
+
+function mapaCorporal(cargas){
+  const max = Math.max(1, ...Object.values(cargas));
+  const cor = v => v ? `rgba(46,122,103,${(0.18 + 0.72 * v/max).toFixed(2)})` : '#EBF1EF';
+  const partes = REGIOES.map(x => x.d.replace(/<(ellipse|rect)/g, `<$1 fill="${cor(cargas[x.r]||0)}" stroke="#D3E0DB" stroke-width="1"`)).join('');
+  const silhueta = cx => `<g fill="#F2F7F5" stroke="#E2EBE8" stroke-width="1">
+      <ellipse cx="${cx}" cy="22" rx="11" ry="13"/>
+      <rect x="${cx-5}" y="33" width="10" height="8" rx="3"/>
+      <path d="M${cx-20} 44q0-7 8-8h24q8 1 8 8v22q0 10-6 14v26q0 6-5 6h-18q-5 0-5-6V80q-6-4-6-14Z"/>
+      <rect x="${cx-32}" y="47" width="11" height="73" rx="5.5"/>
+      <rect x="${cx+21}" y="47" width="11" height="73" rx="5.5"/>
+      <rect x="${cx-17}" y="108" width="15" height="82" rx="7.5"/>
+      <rect x="${cx+2}" y="108" width="15" height="82" rx="7.5"/>
+    </g>`;
+  const cab = silhueta(55) + silhueta(185);
+  const top = Object.entries(cargas).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>NOMES_REG[x[0]]).join(', ');
+  return `<svg viewBox="0 0 240 210" class="bodymap" role="img" aria-label="Mapa de estímulo semanal por região">
+    ${cab}${partes}
+    <text x="55" y="206" text-anchor="middle" font-size="10" fill="#5E726D" font-family="system-ui">frente</text>
+    <text x="185" y="206" text-anchor="middle" font-size="10" fill="#5E726D" font-family="system-ui">costas</text>
+  </svg><p class="meta" style="margin:6px 0 0;font-size:13px">Maior estímulo semanal: ${top || '—'}.</p>`;
+}
+
+/* ================= PADRÕES, EXERCÍCIOS E TÉCNICAS =================
+   f (restrições): axial, valsalva, impacto, flexcol (flexão de coluna com carga),
+   deitado (decúbito dorsal), prono, chao (ir ao solo), equilibrio, mmssalto
+   (braços acima da cabeça), joelhoprof, preensao. niv: 1 simples a 3 complexo.
+   ================================================================= */
+const PADROES = [
+  {id:'agachar',  nome:'Agachar / joelho dominante'},
+  {id:'puxH',     nome:'Puxar horizontal'},
+  {id:'dobradica',nome:'Dobradiça de quadril'},
+  {id:'empH',     nome:'Empurrar horizontal'},
+  {id:'unil',     nome:'Unilateral de MMII / equilíbrio'},
+  {id:'core',     nome:'Core / estabilização'},
+  {id:'puxV',     nome:'Puxar vertical'},
+  {id:'empV',     nome:'Empurrar vertical'},
+  {id:'pant',     nome:'Panturrilha / tornozelo'},
+  {id:'extra',    nome:'Complementar'}
+];
+
+const EXS = [
+ // agachar
+ {p:'agachar', n:'Sentar e levantar da cadeira', eq:'Peso corporal', niv:1, f:[]},
+ {p:'agachar', n:'Leg press horizontal', eq:'Máquina', niv:1, f:[]},
+ {p:'agachar', n:'Cadeira extensora', eq:'Máquina', niv:1, f:[]},
+ {p:'agachar', n:'Agachamento com apoio na parede (bola suíça)', eq:'Peso corporal', niv:1, f:[]},
+ {p:'agachar', n:'Agachamento goblet com halter', eq:'Halter', niv:2, f:['preensao']},
+ {p:'agachar', n:'Agachamento no Smith', eq:'Máquina', niv:2, f:['axial']},
+ {p:'agachar', n:'Agachamento com elástico e apoio em suspensão', eq:'Elástico', niv:2, f:[]},
+ {p:'agachar', n:'Agachamento livre com barra', eq:'Barra', niv:3, f:['axial','valsalva']},
+ {p:'agachar', n:'Agachamento búlgaro', eq:'Halter', niv:3, f:['equilibrio','joelhoprof']},
+ // puxar horizontal
+ {p:'puxH', n:'Remada sentada na polia baixa', eq:'Polia', niv:1, f:['preensao']},
+ {p:'puxH', n:'Remada sentada com elástico', eq:'Elástico', niv:1, f:['preensao']},
+ {p:'puxH', n:'Remada na máquina com apoio de tronco', eq:'Máquina', niv:1, f:['preensao']},
+ {p:'puxH', n:'Remada unilateral com halter apoiado no banco', eq:'Halter', niv:2, f:['preensao']},
+ {p:'puxH', n:'Face pull na polia alta', eq:'Polia', niv:2, f:[]},
+ {p:'puxH', n:'Remada invertida na barra baixa', eq:'Peso corporal', niv:2, f:['preensao']},
+ {p:'puxH', n:'Remada curvada com barra', eq:'Barra', niv:3, f:['flexcol','valsalva','preensao']},
+ // dobradiça de quadril
+ {p:'dobradica', n:'Ponte de glúteo no solo', eq:'Peso corporal', niv:1, f:['chao','deitado']},
+ {p:'dobradica', n:'Mesa flexora', eq:'Máquina', niv:1, f:['prono']},
+ {p:'dobradica', n:'Flexora sentada', eq:'Máquina', niv:1, f:[]},
+ {p:'dobradica', n:'Extensão de quadril na polia em pé', eq:'Polia', niv:2, f:['equilibrio']},
+ {p:'dobradica', n:'Elevação pélvica apoiada no banco', eq:'Halter', niv:2, f:[]},
+ {p:'dobradica', n:'Stiff com halteres', eq:'Halter', niv:2, f:['flexcol']},
+ {p:'dobradica', n:'Good morning com elástico', eq:'Elástico', niv:2, f:['flexcol']},
+ {p:'dobradica', n:'Levantamento terra com barra', eq:'Barra', niv:3, f:['axial','valsalva','flexcol']},
+ {p:'dobradica', n:'Balanço com kettlebell (swing)', eq:'Kettlebell', niv:3, f:['impacto','valsalva','flexcol']},
+ // empurrar horizontal
+ {p:'empH', n:'Supino máquina sentado', eq:'Máquina', niv:1, f:[]},
+ {p:'empH', n:'Flexão de braço inclinada na barra ou parede', eq:'Peso corporal', niv:1, f:[]},
+ {p:'empH', n:'Empurrar horizontal com elástico em pé', eq:'Elástico', niv:1, f:[]},
+ {p:'empH', n:'Crucifixo na polia em pé', eq:'Polia', niv:2, f:[]},
+ {p:'empH', n:'Supino reto com halteres', eq:'Halter', niv:2, f:['deitado']},
+ {p:'empH', n:'Flexão de braço no solo', eq:'Peso corporal', niv:2, f:['chao','prono']},
+ {p:'empH', n:'Supino reto com barra', eq:'Barra', niv:3, f:['deitado','valsalva']},
+ // unilateral / equilíbrio
+ {p:'unil', n:'Apoio unipodal com suporte de mãos', eq:'Peso corporal', niv:1, f:['equilibrio']},
+ {p:'unil', n:'Marcha estacionária com elástico', eq:'Elástico', niv:1, f:['equilibrio']},
+ {p:'unil', n:'Abdução de quadril em pé com elástico', eq:'Elástico', niv:2, f:['equilibrio']},
+ {p:'unil', n:'Afundo estático com apoio lateral', eq:'Peso corporal', niv:2, f:['equilibrio']},
+ {p:'unil', n:'Subida em degrau baixo (step-up)', eq:'Peso corporal', niv:2, f:['equilibrio']},
+ {p:'unil', n:'Avanço caminhando com halteres', eq:'Halter', niv:3, f:['equilibrio','joelhoprof']},
+ // core
+ {p:'core', n:'Anti-extensão em pé com elástico', eq:'Elástico', niv:1, f:[]},
+ {p:'core', n:'Prancha com apoio de mãos elevadas', eq:'Peso corporal', niv:1, f:[]},
+ {p:'core', n:'Pallof press (anti-rotação na polia)', eq:'Polia', niv:2, f:[]},
+ {p:'core', n:'Bird-dog (quatro apoios)', eq:'Peso corporal', niv:2, f:['chao']},
+ {p:'core', n:'Dead bug', eq:'Peso corporal', niv:2, f:['chao','deitado']},
+ {p:'core', n:'Prancha frontal no solo', eq:'Peso corporal', niv:2, f:['chao','prono']},
+ {p:'core', n:'Abdominal supra no solo', eq:'Peso corporal', niv:2, f:['chao','deitado','flexcol']},
+ {p:'core', n:'Elevação de pernas suspenso na barra', eq:'Peso corporal', niv:3, f:['preensao','flexcol','mmssalto']},
+ // puxar vertical
+ {p:'puxV', n:'Puxada alta na polia', eq:'Polia', niv:1, f:['preensao','mmssalto']},
+ {p:'puxV', n:'Puxada com elástico ancorado alto', eq:'Elástico', niv:1, f:['mmssalto']},
+ {p:'puxV', n:'Pulôver na polia', eq:'Polia', niv:2, f:['mmssalto']},
+ {p:'puxV', n:'Puxada frente na máquina com apoio de tronco', eq:'Máquina', niv:1, f:['preensao','mmssalto']},
+ {p:'puxV', n:'Barra fixa assistida', eq:'Máquina', niv:3, f:['preensao','mmssalto']},
+ // empurrar vertical
+ {p:'empV', n:'Elevação frontal com elástico até a altura do ombro', eq:'Elástico', niv:1, f:[]},
+ {p:'empV', n:'Desenvolvimento sentado na máquina', eq:'Máquina', niv:1, f:['mmssalto']},
+ {p:'empV', n:'Landmine press (barra angulada)', eq:'Barra', niv:2, f:[]},
+ {p:'empV', n:'Desenvolvimento sentado com halteres', eq:'Halter', niv:2, f:['mmssalto']},
+ {p:'empV', n:'Desenvolvimento militar em pé com barra', eq:'Barra', niv:3, f:['mmssalto','valsalva','axial']},
+ // panturrilha
+ {p:'pant', n:'Panturrilha sentada na máquina', eq:'Máquina', niv:1, f:[]},
+ {p:'pant', n:'Elevação de panturrilha em pé com apoio', eq:'Peso corporal', niv:1, f:['equilibrio']},
+ {p:'pant', n:'Panturrilha no leg press', eq:'Máquina', niv:1, f:[]},
+ {p:'pant', n:'Panturrilha unilateral no degrau', eq:'Peso corporal', niv:2, f:['equilibrio']},
+ {p:'pant', n:'Saltos verticais baixos', eq:'Peso corporal', niv:3, f:['impacto','equilibrio']},
+ // complementar
+ {p:'extra', n:'Preensão manual isométrica (30% da CVM)', eq:'Handgrip', niv:1, f:['preensao']},
+ {p:'extra', n:'Rotação externa de ombro com elástico', eq:'Elástico', niv:1, f:[]},
+ {p:'extra', n:'Mobilidade torácica sentada', eq:'Peso corporal', niv:1, f:[]},
+ {p:'extra', n:'Extensão de punho e antebraço com halter leve', eq:'Halter', niv:1, f:['preensao']},
+ {p:'extra', n:'Abdução de quadril deitado de lado', eq:'Peso corporal', niv:2, f:['chao']},
+ {p:'extra', n:'Caminhada com carga (farmer walk) em percurso curto', eq:'Halter', niv:2, f:['preensao','equilibrio']},
+ // Pilates (solo e aparelhos)
+ {p:'agachar', n:'Footwork no reformer', eq:'Reformer', niv:1, f:[], pil:1},
+ {p:'agachar', n:'Agachamento na parede com bola', eq:'Solo', niv:1, f:[], pil:1},
+ {p:'agachar', n:'Agachamento na chair', eq:'Chair', niv:2, f:[], pil:1},
+ {p:'dobradica', n:'Shoulder bridge no solo', eq:'Mat', niv:1, f:['chao','deitado'], pil:1},
+ {p:'dobradica', n:'Ponte no reformer', eq:'Reformer', niv:2, f:['deitado'], pil:1},
+ {p:'dobradica', n:'Extensão de quadril em pé no cadillac', eq:'Cadillac', niv:2, f:['equilibrio'], pil:1},
+ {p:'empH', n:'Arm press sentado no cadillac', eq:'Cadillac', niv:1, f:[], pil:1},
+ {p:'empH', n:'Chest press no reformer', eq:'Reformer', niv:2, f:['deitado'], pil:1},
+ {p:'empH', n:'Push-up com apoio na caixa', eq:'Reformer', niv:2, f:['prono'], pil:1},
+ {p:'puxH', n:'Remada sentada com elástico (short box)', eq:'Mat', niv:1, f:['preensao'], pil:1},
+ {p:'puxH', n:'Rowing sentado no reformer', eq:'Reformer', niv:2, f:['preensao'], pil:1},
+ {p:'empV', n:'Arms overhead sentado no reformer', eq:'Reformer', niv:2, f:['mmssalto'], pil:1},
+ {p:'empV', n:'Elevação de braços com elástico sentado', eq:'Mat', niv:1, f:[], pil:1},
+ {p:'puxV', n:'Lat pull sentado no cadillac', eq:'Cadillac', niv:1, f:['mmssalto'], pil:1},
+ {p:'puxV', n:'Pull straps na caixa', eq:'Reformer', niv:2, f:['prono','mmssalto'], pil:1},
+ {p:'core', n:'Ativação de transverso em pé com elástico', eq:'Mat', niv:1, f:[], pil:1},
+ {p:'core', n:'Dead bug com molas leves', eq:'Cadillac', niv:1, f:['chao','deitado'], pil:1},
+ {p:'core', n:'Prancha com apoio na caixa', eq:'Reformer', niv:2, f:['prono'], pil:1},
+ {p:'core', n:'The hundred', eq:'Mat', niv:2, f:['chao','deitado','flexcol'], pil:1},
+ {p:'core', n:'Prancha lateral modificada', eq:'Mat', niv:2, f:['chao'], pil:1},
+ {p:'unil', n:'Footwork unilateral no reformer', eq:'Reformer', niv:2, f:[], pil:1},
+ {p:'unil', n:'Subida controlada no step baixo', eq:'Solo', niv:2, f:['equilibrio'], pil:1},
+ {p:'unil', n:'Side splits no reformer', eq:'Reformer', niv:3, f:['equilibrio'], pil:1},
+ {p:'pant', n:'Elevação de calcanhar no reformer', eq:'Reformer', niv:1, f:[], pil:1},
+ {p:'pant', n:'Elevação de calcanhar com apoio de mãos', eq:'Solo', niv:1, f:['equilibrio'], pil:1},
+ {p:'extra', n:'Mobilidade torácica com bastão sentado', eq:'Mat', niv:1, f:[], pil:1},
+ {p:'extra', n:'Ativação do assoalho pélvico sentado', eq:'Mat', niv:1, f:[], pil:1},
+ // Aquáticos
+ {p:'agachar', n:'Agachamento na piscina (água ao peito)', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'dobradica', n:'Extensão de quadril com flutuador', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'empH', n:'Empurrar horizontal com halter flutuante', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'puxH', n:'Remada com halter flutuante', eq:'Piscina', niv:1, f:['preensao'], aq:1},
+ {p:'empV', n:'Adução de ombro com flutuador', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'puxV', n:'Abdução de ombro contra a água', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'core', n:'Anti-rotação com prancha submersa', eq:'Piscina', niv:2, f:[], aq:1},
+ {p:'unil', n:'Corrida estacionária na água', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'unil', n:'Apoio unipodal com turbulência', eq:'Piscina', niv:2, f:['equilibrio'], aq:1},
+ {p:'pant', n:'Elevação de calcanhar na piscina', eq:'Piscina', niv:1, f:[], aq:1},
+ {p:'extra', n:'Deslocamento lateral na água', eq:'Piscina', niv:1, f:['equilibrio'], aq:1},
+ // Domiciliar
+ {p:'agachar', n:'Sentar e levantar do sofá', eq:'Sem equipamento', niv:1, f:[], dom:1},
+ {p:'agachar', n:'Agachamento com apoio na bancada', eq:'Sem equipamento', niv:1, f:[], dom:1},
+ {p:'agachar', n:'Agachamento isométrico na parede', eq:'Sem equipamento', niv:1, f:[], dom:1},
+ {p:'agachar', n:'Agachamento com elástico nos joelhos', eq:'Elástico', niv:2, f:[], dom:1},
+ {p:'agachar', n:'Agachamento com mochila carregada', eq:'Mochila', niv:2, f:['axial'], dom:1},
+ {p:'dobradica', n:'Ponte de glúteo no colchonete', eq:'Sem equipamento', niv:1, f:['chao','deitado'], dom:1},
+ {p:'dobradica', n:'Coice de glúteo em quatro apoios', eq:'Sem equipamento', niv:1, f:['chao'], dom:1},
+ {p:'dobradica', n:'Elevação pélvica com costas apoiadas no sofá', eq:'Mochila', niv:2, f:[], dom:1},
+ {p:'dobradica', n:'Stiff com mochila', eq:'Mochila', niv:2, f:['flexcol'], dom:1},
+ {p:'dobradica', n:'Good morning com elástico sob os pés', eq:'Elástico', niv:2, f:['flexcol'], dom:1},
+ {p:'empH', n:'Flexão de braço na parede', eq:'Sem equipamento', niv:1, f:[], dom:1},
+ {p:'empH', n:'Flexão de braço apoiada na bancada', eq:'Sem equipamento', niv:1, f:[], dom:1},
+ {p:'empH', n:'Supino com elástico passado nas costas', eq:'Elástico', niv:2, f:[], dom:1},
+ {p:'empH', n:'Flexão de braço com joelhos apoiados', eq:'Sem equipamento', niv:2, f:['chao','prono'], dom:1},
+ {p:'empH', n:'Flexão de braço completa no solo', eq:'Sem equipamento', niv:3, f:['chao','prono'], dom:1},
+ {p:'puxH', n:'Remada com elástico preso na maçaneta', eq:'Elástico', niv:1, f:['preensao'], dom:1},
+ {p:'puxH', n:'Face pull com elástico na porta', eq:'Elástico', niv:1, f:[], dom:1},
+ {p:'puxH', n:'Remada unilateral com mochila apoiado na cadeira', eq:'Mochila', niv:2, f:['preensao'], dom:1},
+ {p:'puxH', n:'Remada invertida sob a mesa firme', eq:'Sem equipamento', niv:3, f:['preensao'], dom:1},
+ {p:'empV', n:'Elevação lateral com garrafas de água', eq:'Garrafas', niv:1, f:[], dom:1},
+ {p:'empV', n:'Desenvolvimento sentado com garrafas', eq:'Garrafas', niv:1, f:['mmssalto'], dom:1},
+ {p:'empV', n:'Desenvolvimento com elástico sob os pés', eq:'Elástico', niv:2, f:['mmssalto'], dom:1},
+ {p:'puxV', n:'Puxada alta com elástico preso na porta', eq:'Elástico', niv:1, f:['mmssalto'], dom:1},
+ {p:'puxV', n:'Puxada unilateral com elástico ancorado alto', eq:'Elástico', niv:2, f:['mmssalto'], dom:1},
+ {p:'puxV', n:'Pulôver com garrafa deitado no colchonete', eq:'Garrafas', niv:2, f:['chao','deitado','mmssalto'], dom:1},
+ {p:'core', n:'Anti-extensão em pé com elástico na maçaneta', eq:'Elástico', niv:1, f:[], dom:1},
+ {p:'core', n:'Prancha com mãos na bancada', eq:'Sem equipamento', niv:1, f:[], dom:1},
+ {p:'core', n:'Pallof press com elástico na maçaneta', eq:'Elástico', niv:2, f:[], dom:1},
+ {p:'core', n:'Bird-dog no colchonete', eq:'Sem equipamento', niv:2, f:['chao'], dom:1},
+ {p:'core', n:'Dead bug no colchonete', eq:'Sem equipamento', niv:2, f:['chao','deitado'], dom:1},
+ {p:'core', n:'Prancha frontal no colchonete', eq:'Sem equipamento', niv:2, f:['chao','prono'], dom:1},
+ {p:'unil', n:'Apoio unipodal ao lado da bancada', eq:'Sem equipamento', niv:1, f:['equilibrio'], dom:1},
+ {p:'unil', n:'Afundo estático com apoio na cadeira', eq:'Sem equipamento', niv:2, f:['equilibrio'], dom:1},
+ {p:'unil', n:'Subida no degrau da escada', eq:'Sem equipamento', niv:2, f:['equilibrio'], dom:1},
+ {p:'unil', n:'Abdução de quadril em pé com elástico na porta', eq:'Elástico', niv:2, f:['equilibrio'], dom:1},
+ {p:'pant', n:'Elevação de calcanhar no degrau com apoio', eq:'Sem equipamento', niv:1, f:['equilibrio'], dom:1},
+ {p:'pant', n:'Elevação de calcanhar com mochila', eq:'Mochila', niv:2, f:[], dom:1},
+ {p:'extra', n:'Rotação externa de ombro com elástico na maçaneta', eq:'Elástico', niv:1, f:[], dom:1},
+ {p:'extra', n:'Preensão com bolinha ou toalha enrolada', eq:'Sem equipamento', niv:1, f:['preensao'], dom:1},
+ {p:'extra', n:'Superman no colchonete', eq:'Sem equipamento', niv:2, f:['chao','prono'], dom:1},
+ {p:'extra', n:'Caminhada com sacolas pela casa', eq:'Sacolas', niv:2, f:['preensao','equilibrio'], dom:1}
+];
+
+const DICAS = {
+ 'Sentar e levantar da cadeira':'Pés afastados na largura do quadril, levantar sem impulso de braços; progredir reduzindo a altura do assento.',
+ 'Leg press horizontal':'Pés na metade superior da plataforma, descer até 90° de joelho sem tirar o quadril do encosto.',
+ 'Cadeira extensora':'Amplitude de 90° até quase a extensão total; em dor patelofemoral, trabalhar de 90° a 45°.',
+ 'Agachamento com apoio na parede (bola suíça)':'Bola na lombar, pés à frente do quadril, descer até onde não houver dor.',
+ 'Agachamento goblet com halter':'Halter junto ao peito, cotovelos por dentro dos joelhos, tronco mais vertical.',
+ 'Agachamento no Smith':'Pés um pouco à frente da barra, descida controlada; permite falhar com segurança.',
+ 'Agachamento com elástico e apoio em suspensão':'Mãos nas alças, peso nos calcanhares, o apoio permite descer mais sem sobrecarregar o joelho.',
+ 'Agachamento livre com barra':'Barra no trapézio, coluna neutra, expirar na subida; exige boa mobilidade de tornozelo.',
+ 'Agachamento búlgaro':'Pé de trás no banco, 70% do peso na perna da frente, joelho da frente alinhado ao segundo dedo.',
+ 'Remada sentada na polia baixa':'Tronco firme, puxar com os cotovelos rente ao corpo, escápulas para trás e para baixo.',
+ 'Remada sentada com elástico':'Elástico na altura do esterno, aproximar escápulas antes de dobrar os cotovelos.',
+ 'Remada na máquina com apoio de tronco':'Peito apoiado elimina a carga lombar; ideal quando há dor ou restrição de coluna.',
+ 'Remada unilateral com halter apoiado no banco':'Mão e joelho no banco, coluna paralela ao solo, puxar o halter até a cintura sem rodar o tronco.',
+ 'Face pull na polia alta':'Puxar na direção do rosto com cotovelos altos; fortalece rotadores e corrige ombro protraído.',
+ 'Remada invertida na barra baixa':'Corpo em prancha sob a barra; quanto mais horizontal, mais difícil.',
+ 'Remada curvada com barra':'Quadril para trás, coluna neutra, tronco a 45°; alta exigência lombar.',
+ 'Ponte de glúteo no solo':'Pés próximos ao quadril, subir até alinhar joelho, quadril e ombro, sem hiperestender a lombar.',
+ 'Mesa flexora':'Joelho alinhado ao eixo da máquina, excêntrica em 3 s, sem tirar o quadril do apoio.',
+ 'Flexora sentada':'Quadril fixo no encosto, amplitude completa; opção quando o decúbito ventral não é tolerado.',
+ 'Extensão de quadril na polia em pé':'Apoiar as mãos, estender o quadril sem arquear a lombar; glúteo isolado.',
+ 'Elevação pélvica apoiada no banco':'Escápulas no banco, queixo levemente para dentro, pausa de 1 s no topo.',
+ 'Stiff com halteres':'Joelhos levemente fletidos, quadril para trás, descer até sentir o posterior; coluna sempre neutra.',
+ 'Good morning com elástico':'Elástico sob os pés e na nuca, quadril para trás; versão de baixa carga do padrão de dobradiça.',
+ 'Levantamento terra com barra':'Barra rente às canelas, empurrar o chão, travar o abdômen; exige técnica consolidada.',
+ 'Balanço com kettlebell (swing)':'Movimento de quadril, não de braço; alta demanda cardiovascular e lombar.',
+ 'Supino máquina sentado':'Punhos alinhados aos cotovelos, não travar os cotovelos no final; posição estável e segura.',
+ 'Flexão de braço inclinada na barra ou parede':'Corpo em prancha, quanto mais alto o apoio, mais fácil; progredir baixando o apoio.',
+ 'Empurrar horizontal com elástico em pé':'Elástico nas costas na altura das axilas, pé à frente para estabilizar.',
+ 'Crucifixo na polia em pé':'Cotovelos levemente fletidos, arco amplo e controlado, sem levar as mãos atrás do tronco.',
+ 'Supino reto com halteres':'Maior amplitude que a barra; descer até a linha do peito, punhos neutros.',
+ 'Flexão de braço no solo':'Corpo em linha reta, cotovelos a 45° do tronco, abdômen ativo.',
+ 'Supino reto com barra':'Escápulas retraídas, pés firmes, barra na linha mamilar; usar segurança ou parceiro.',
+ 'Apoio unipodal com suporte de mãos':'Apoiar os dedos na barra, 20–30 s por lado; progredir retirando o apoio e fechando os olhos.',
+ 'Marcha estacionária com elástico':'Elástico nos tornozelos, elevar o joelho até a altura do quadril com tronco estável.',
+ 'Abdução de quadril em pé com elástico':'Perna de apoio levemente fletida, afastar sem inclinar o tronco; glúteo médio.',
+ 'Afundo estático com apoio lateral':'Passada média, descer o joelho de trás em direção ao chão, tronco vertical.',
+ 'Subida em degrau baixo (step-up)':'Pé inteiro no degrau, subir empurrando o calcanhar, descer em 3 s controlando.',
+ 'Avanço caminhando com halteres':'Passada longa, joelho da frente alinhado; exige equilíbrio dinâmico.',
+ 'Anti-extensão em pé com elástico':'Elástico à frente na altura do esterno, estender os braços sem deixar a lombar arquear.',
+ 'Prancha com apoio de mãos elevadas':'Mãos no banco, corpo alinhado, glúteo e abdômen ativos, respiração contínua.',
+ 'Pallof press (anti-rotação na polia)':'Polia na lateral, empurrar as mãos à frente resistindo à rotação; 20–30 s por lado.',
+ 'Bird-dog (quatro apoios)':'Estender braço e perna opostos sem rodar o quadril; 5 s de sustentação.',
+ 'Dead bug':'Lombar colada no chão, alternar braço e perna opostos devagar, expirando na extensão.',
+ 'Prancha frontal no solo':'Cotovelos sob os ombros, quadril na linha do tronco; trocar por apoio de joelhos se a lombar ceder.',
+ 'Abdominal supra no solo':'Amplitude curta, queixo afastado do peito; evitar quando há restrição de flexão de coluna.',
+ 'Elevação de pernas suspenso na barra':'Alta demanda de preensão e de controle lombar; opção avançada.',
+ 'Puxada alta na polia':'Pegada pouco além dos ombros, puxar até a clavícula, peito aberto, sem puxar atrás da nuca.',
+ 'Puxada com elástico ancorado alto':'Sentado ou ajoelhado, puxar até a linha do peito aproximando as escápulas.',
+ 'Pulôver na polia':'Cotovelos semi-fletidos, movimento só de ombro, abdômen firme.',
+ 'Puxada frente na máquina com apoio de tronco':'Tronco apoiado reduz a compensação lombar; bom para iniciantes e idosos.',
+ 'Barra fixa assistida':'Regular o contrapeso para completar as repetições com RIR 2; descida em 3 s.',
+ 'Elevação frontal com elástico até a altura do ombro':'Parar na altura do ombro, polegar para cima, sem balançar o tronco.',
+ 'Desenvolvimento sentado na máquina':'Encosto regulado para o punho ficar na linha do ombro; não travar os cotovelos.',
+ 'Landmine press (barra angulada)':'Trajetória diagonal, poupa o ombro de amplitude total acima da cabeça.',
+ 'Desenvolvimento sentado com halteres':'Descer até a linha da orelha, cotovelos levemente à frente, lombar apoiada.',
+ 'Desenvolvimento militar em pé com barra':'Glúteo e abdômen firmes para não arquear a lombar; alta exigência de estabilidade.',
+ 'Panturrilha sentada na máquina':'Joelho fletido enfatiza o sóleo; pausa de 1 s em cima e 3 s na descida.',
+ 'Elevação de panturrilha em pé com apoio':'Amplitude completa, calcanhar abaixo da linha do degrau quando possível.',
+ 'Panturrilha no leg press':'Permite carga alta com baixa exigência de equilíbrio.',
+ 'Panturrilha unilateral no degrau':'Um pé por vez, apoio das mãos para equilíbrio, descida lenta.',
+ 'Saltos verticais baixos':'Aterrissagem suave com joelho fletido; só com liberação para impacto.',
+ 'Preensão manual isométrica (30% da CVM)':'4 × 2 min a 30% da força máxima, 1–3 min de intervalo, sem prender a respiração.',
+ 'Rotação externa de ombro com elástico':'Cotovelo colado ao tronco, rodar o antebraço para fora sem afastar o cotovelo.',
+ 'Mobilidade torácica sentada':'Mãos na nuca, rodar e estender a torácica expirando; 8–10 repetições por lado.',
+ 'Extensão de punho e antebraço com halter leve':'Antebraço apoiado, movimento só do punho, amplitude confortável.',
+ 'Abdução de quadril deitado de lado':'Quadril empilhado, elevar a perna de cima sem rodar a pelve.',
+ 'Caminhada com carga (farmer walk) em percurso curto':'Postura ereta, escápulas firmes, 20–30 m por série; exige preensão.',
+ 'Footwork no reformer':'Pés na barra, movimento conduzido pelas molas, coluna neutra, expirar no esforço.',
+ 'Agachamento na parede com bola':'Bola na lombar, descer até 60–70° de joelho, sustentar a respiração contínua.',
+ 'Agachamento na chair':'Pedal acompanha a descida, tronco ereto; controle excêntrico é o objetivo.',
+ 'Shoulder bridge no solo':'Subir vértebra a vértebra, descer no mesmo ritmo, sem hiperestender a lombar.',
+ 'Ponte no reformer':'Pés na barra, elevar o quadril junto com o carrinho, controle total na volta.',
+ 'Extensão de quadril em pé no cadillac':'Apoio das mãos na torre, estender o quadril contra a mola sem arquear a lombar.',
+ 'Arm press sentado no cadillac':'Sentado, empurrar as molas à frente com escápulas estáveis.',
+ 'Chest press no reformer':'Deitado, cotovelos na linha do ombro, empurrar sem travar as articulações.',
+ 'Push-up com apoio na caixa':'Mãos na caixa, corpo alinhado; aumentar a dificuldade baixando o apoio.',
+ 'Remada sentada com elástico (short box)':'Sentado com pelve neutra, puxar aproximando as escápulas, sem elevar os ombros.',
+ 'Rowing sentado no reformer':'Puxar as alças com escápulas primeiro, tronco imóvel e alongado.',
+ 'Arms overhead sentado no reformer':'Elevar os braços só até onde a lombar se mantiver neutra.',
+ 'Elevação de braços com elástico sentado':'Versão sem aparelho, ideal quando há restrição de amplitude acima da cabeça.',
+ 'Lat pull sentado no cadillac':'Barra na linha do peito, cotovelos para baixo, tronco estável.',
+ 'Pull straps na caixa':'Em decúbito ventral na caixa, puxar as alças abrindo o peito; extensores torácicos.',
+ 'Ativação de transverso em pé com elástico':'Expirar levando o umbigo em direção à coluna, sem prender a respiração nem retificar a lombar.',
+ 'Dead bug com molas leves':'Molas nas mãos, alternar pernas mantendo a lombar em contato com o solo.',
+ 'Prancha com apoio na caixa':'Ombros sobre os punhos, carrinho travado, 20–40 s de sustentação.',
+ 'The hundred':'Flexão cervical e de tronco com bombeamento dos braços; evitar quando a flexão de coluna é restrita.',
+ 'Prancha lateral modificada':'Joelhos apoiados, quadril elevado e alinhado; progride estendendo as pernas.',
+ 'Footwork unilateral no reformer':'Uma perna por vez, pelve nivelada, molas leves.',
+ 'Subida controlada no step baixo':'Subida em 2 s e descida em 3 s, com total controle do joelho.',
+ 'Side splits no reformer':'Abdução controlada com pelve estável; exercício avançado de equilíbrio.',
+ 'Elevação de calcanhar no reformer':'Molas leves, amplitude completa, pausa no topo.',
+ 'Elevação de calcanhar com apoio de mãos':'Apoio na barra, subir e descer em 3 s.',
+ 'Mobilidade torácica com bastão sentado':'Bastão nos ombros, rodar só a torácica mantendo a pelve fixa.',
+ 'Ativação do assoalho pélvico sentado':'Contrair como se interrompesse o fluxo urinário, 5 s de contração e 5 s de relaxamento.',
+ 'Agachamento na piscina (água ao peito)':'Flutuação reduz a carga articular; a velocidade define a intensidade.',
+ 'Extensão de quadril com flutuador':'Flutuador no tornozelo, levar a perna para trás sem arquear a lombar.',
+ 'Empurrar horizontal com halter flutuante':'Empurrar o halter para frente mantendo escápulas estáveis.',
+ 'Remada com halter flutuante':'Puxar o halter em direção ao quadril contra a flutuação.',
+ 'Adução de ombro com flutuador':'Levar os braços para baixo contra a flutuação, cotovelos semiestendidos.',
+ 'Abdução de ombro contra a água':'Afastar os braços lateralmente; a resistência cresce com a velocidade.',
+ 'Anti-rotação com prancha submersa':'Segurar a prancha submersa à frente resistindo à turbulência.',
+ 'Corrida estacionária na água':'Elevar os joelhos em ritmo constante; marcador é a PSE, não a FC.',
+ 'Apoio unipodal com turbulência':'Um pé no fundo enquanto o colega ou o movimento da água desestabiliza.',
+ 'Elevação de calcanhar na piscina':'Amplitude completa, 2 s em cima.',
+ 'Deslocamento lateral na água':'Passos laterais com tronco ereto; trabalha abdutores e equilíbrio.',
+ 'Sentar e levantar do sofá':'Sem impulso de braços, descida em 3 s; se o sofá for muito baixo, colocar uma almofada firme.',
+ 'Agachamento com apoio na bancada':'Mãos na bancada só para equilíbrio, peso nos calcanhares.',
+ 'Agachamento isométrico na parede':'Costas na parede, joelhos a 60–90°, sustentar 20–45 s respirando normalmente.',
+ 'Agachamento com elástico nos joelhos':'Elástico acima dos joelhos, empurrar contra ele durante todo o movimento.',
+ 'Agachamento com mochila carregada':'Mochila nas costas com livros ou garrafas; progredir somando peso aos poucos.',
+ 'Ponte de glúteo no colchonete':'Pés próximos ao quadril, subir até alinhar joelho, quadril e ombro, 1 s de pausa.',
+ 'Coice de glúteo em quatro apoios':'Levar o calcanhar ao teto sem arquear a lombar nem rodar o quadril.',
+ 'Elevação pélvica com costas apoiadas no sofá':'Escápulas na borda do sofá, mochila sobre o quadril como carga.',
+ 'Stiff com mochila':'Mochila junto às coxas, quadril para trás, coluna neutra, descer até sentir o posterior.',
+ 'Good morning com elástico sob os pés':'Elástico sob os pés e sobre os ombros, inclinar o tronco com joelhos levemente fletidos.',
+ 'Flexão de braço na parede':'Mãos na parede na altura do peito; quanto mais afastados os pés, mais difícil.',
+ 'Flexão de braço apoiada na bancada':'Progressão natural depois da parede; corpo em linha reta.',
+ 'Supino com elástico passado nas costas':'Elástico nas costas na altura das axilas, empurrar à frente com um pé à frente.',
+ 'Flexão de braço com joelhos apoiados':'Quadril alinhado ao tronco, cotovelos a 45°, descida em 3 s.',
+ 'Flexão de braço completa no solo':'Corpo em prancha rígida; voltar para a versão de joelhos se o quadril ceder.',
+ 'Remada com elástico preso na maçaneta':'Elástico na maçaneta na altura do umbigo, puxar com cotovelos rente ao corpo.',
+ 'Face pull com elástico na porta':'Elástico acima da linha dos ombros, puxar na direção do rosto com cotovelos altos.',
+ 'Remada unilateral com mochila apoiado na cadeira':'Mão e joelho na cadeira, puxar a mochila até a cintura sem rodar o tronco.',
+ 'Remada invertida sob a mesa firme':'Só em mesa realmente estável; corpo em prancha puxando o peito até a borda.',
+ 'Elevação lateral com garrafas de água':'Garrafas de 500 ml a 1,5 L, elevar até a altura do ombro sem balançar.',
+ 'Desenvolvimento sentado com garrafas':'Sentado com as costas apoiadas, empurrar acima da cabeça sem arquear a lombar.',
+ 'Desenvolvimento com elástico sob os pés':'Pisar no elástico e empurrar as mãos acima da cabeça.',
+ 'Puxada alta com elástico preso na porta':'Ancorar o elástico no alto da porta, puxar até a linha do peito, sentado ou ajoelhado.',
+ 'Puxada unilateral com elástico ancorado alto':'Um braço por vez, resistindo à rotação do tronco.',
+ 'Pulôver com garrafa deitado no colchonete':'Deitado, levar a garrafa atrás da cabeça só até onde a lombar se mantiver no chão.',
+ 'Anti-extensão em pé com elástico na maçaneta':'Elástico à frente, estender os braços sem deixar o tronco arquear.',
+ 'Prancha com mãos na bancada':'Versão fácil da prancha; corpo em linha, abdômen e glúteo ativos.',
+ 'Pallof press com elástico na maçaneta':'Elástico na lateral, empurrar as mãos à frente resistindo à rotação; 20–30 s por lado.',
+ 'Bird-dog no colchonete':'Braço e perna opostos, 5 s de sustentação, quadril nivelado.',
+ 'Dead bug no colchonete':'Lombar colada ao chão, movimento lento, expirar na extensão.',
+ 'Prancha frontal no colchonete':'Cotovelos sob os ombros; se a lombar ceder, apoiar os joelhos.',
+ 'Apoio unipodal ao lado da bancada':'Dedos na bancada para segurança, 20–30 s por lado, progredir soltando as mãos.',
+ 'Afundo estático com apoio na cadeira':'Mão na cadeira, descer o joelho de trás, tronco vertical.',
+ 'Subida no degrau da escada':'Corrimão para segurança, pé inteiro no degrau, descida controlada em 3 s.',
+ 'Abdução de quadril em pé com elástico na porta':'Elástico no tornozelo, afastar a perna sem inclinar o tronco.',
+ 'Elevação de calcanhar no degrau com apoio':'Calcanhar abaixo da linha do degrau quando houver amplitude e segurança.',
+ 'Elevação de calcanhar com mochila':'Mochila nas costas, amplitude completa, 1 s de pausa em cima.',
+ 'Rotação externa de ombro com elástico na maçaneta':'Cotovelo colado ao tronco, rodar o antebraço para fora.',
+ 'Preensão com bolinha ou toalha enrolada':'Apertar por 5 s e soltar por 5 s; útil quando há indicação de trabalho isométrico de preensão.',
+ 'Superman no colchonete':'Elevar braços e pernas poucos centímetros, olhar para o chão, sem forçar a lombar.',
+ 'Caminhada com sacolas pela casa':'Sacolas equilibradas nas duas mãos, postura ereta, 30–60 s por série.'
+};
+
+/* Estações cíclicas (modalidades aeróbias) */
+const CICLICOS = [
+ {n:'Cicloergômetro horizontal', niv:1, f:[]},
+ {n:'Cicloergômetro vertical', niv:1, f:[]},
+ {n:'Elíptico', niv:1, f:[]},
+ {n:'Esteira — caminhada inclinada', niv:1, f:[]},
+ {n:'Ergômetro de braço', niv:1, f:[]},
+ {n:'Caminhada ou corrida aquática', niv:1, f:[]},
+ {n:'Remo ergômetro', niv:2, f:['flexcol']},
+ {n:'Escada rolante / stepper', niv:2, f:['equilibrio']},
+ {n:'Corda naval', niv:2, f:['preensao']},
+ {n:'SkiErg', niv:2, f:['flexcol','mmssalto']},
+ {n:'Trenó (empurrar e puxar)', niv:2, f:['impacto','preensao']},
+ {n:'Corrida na esteira', niv:3, f:['impacto']}
+];
+
+
+/* ================= MODALIDADES =================
+   maxRisk: maior risco clínico compatível · bloq: condições incompatíveis
+   exige: flags que NÃO podem estar bloqueadas · aerTeto: teto de %FCR necessário
+   Todas as prescrições são derivadas das faixas sintetizadas (ph/s),
+   então repetições, carga e descanso ficam sempre dentro do proposto.
+   ================================================= */
+const MODALIDADES = [
+ {id:'auto', nome:'Deixar o app escolher', auto:true,
+  resumo:'O app seleciona a modalidade pelas condições, pelo risco e pelo teto de intensidade permitido.'},
+
+ {id:'musc', nome:'Musculação', maxRisk:3, bloq:[], usaSeries:true, tec:'todas',
+  resumo:'Resistido tradicional em máquinas, halteres e polias. Maior controle de carga e progressão.',
+  cell:(ph,s)=>`${ph[1].series} × ${ph[1].reps[0]}–${ph[1].reps[1]}<br><span class="ex-eq">${ph[1].rm}% 1RM · cadência ${s.tempo}</span>`,
+  estrutura:(ph,s)=>[`Completar todas as séries de um exercício antes do próximo.`,
+    `Carga entre ${r5(s.rm[0])} e ${r5(s.rm[1])}% de 1RM, repetições entre ${s.reps[0]} e ${s.reps[1]}.`]},
+
+ {id:'dom', nome:'Treino domiciliar', maxRisk:3, bloq:[], usaSeries:true, dom:true, rec:['obe','lomb','fibro','idoso','gest','asma','ar'],
+  tec:['simples','biset','cluster','isometria','excentrico'],
+  resumo:'Peso corporal, elásticos, mochila e garrafas, com progressão por alavanca e por tempo sob tensão.',
+  cell:(ph,s)=>`${ph[1].series} × ${ph[1].reps[0]}–${ph[1].reps[1]}<br><span class="ex-eq">PSE CR10 ${ph[1].cr10} · RIR ${ph[1].rir} · cadência ${s.tempo}</span>`,
+  estrutura:(ph,s)=>[`Sem %1RM: regular a dificuldade pela alavanca, pela amplitude e pelo elástico, mantendo ${s.reps[0]}–${s.reps[1]} repetições com RIR ${ph[1].rir}.`,
+    `Quando passar de ${s.reps[1]} repetições com folga, avançar para a variação seguinte da mesma linha.`,
+    `Descanso de ${s.rest[0]}–${s.rest[1]} s, cronometrado; sem pressa entre as séries.`,
+    `Material: elástico, mochila com livros ou garrafas de água, cadeira firme e um degrau.`]},
+
+ {id:'multi', nome:'Multicomponente', maxRisk:3, bloq:[], usaSeries:true, rec:['idoso','avc','park','op','ic'],
+  eq:['Peso corporal','Elástico','Halter','Máquina','Polia','Handgrip'], tec:['simples','cluster','isometria','potencia'],
+  resumo:'Força, equilíbrio, marcha e mobilidade na mesma sessão. Formato de escolha para idoso frágil e neurológico.',
+  cell:(ph,s)=>`${ph[1].series} × ${ph[1].reps[0]}–${ph[1].reps[1]}<br><span class="ex-eq">${ph[1].rm}% 1RM + tarefa de equilíbrio</span>`,
+  estrutura:(ph,s)=>[`Alternar cada exercício de força com uma tarefa de equilíbrio ou marcha, que ocupa o intervalo.`,
+    `Fechar com 8–10 min de marcha em diferentes direções e velocidades.`,
+    `Repetições entre ${s.reps[0]} e ${s.reps[1]}, carga entre ${r5(s.rm[0])} e ${r5(s.rm[1])}% de 1RM.`]},
+
+ {id:'func', nome:'Treinamento funcional', maxRisk:2, bloq:[], usaSeries:true, rec:['lomb','obe','idoso'],
+  eq:['Peso corporal','Elástico','Halter','Kettlebell','Polia'], tec:['simples','biset','potencia','isometria'],
+  resumo:'Padrões de movimento integrados com peso corporal, elásticos e implementos livres.',
+  cell:(ph,s)=>`${ph[1].series} voltas × ${ph[1].reps[0]}–${ph[1].reps[1]}<br><span class="ex-eq">PSE CR10 ${ph[1].cr10}</span>`,
+  estrutura:(ph,s)=>[`Blocos de 3–4 padrões, ${ph[1].series} voltas por bloco, 60–90 s entre blocos.`,
+    `Carga ajustada para manter ${s.reps[0]}–${s.reps[1]} repetições com técnica estável (RIR ${ph[1].rir}).`]},
+
+ {id:'circ', nome:'Circuito metabólico', maxRisk:2, bloq:[], usaSeries:true, rec:['obe','dm2','dlp'],
+  eq:['Peso corporal','Elástico','Halter','Máquina','Polia','Kettlebell'], tec:['simples','biset'],
+  resumo:'Estações em sequência com transição curta. Soma efeito metabólico ao estímulo de força.',
+  cell:(ph,s)=>`${ph[1].series} voltas × ${ph[1].reps[1]} reps<br><span class="ex-eq">${r5(s.rm[0])}–${ph[1].rm}% 1RM</span>`,
+  estrutura:(ph,s)=>[`${ph[1].series} voltas pelas estações, 30–60 s de transição e 2 min entre voltas.`,
+    `Carga na parte baixa da faixa (${r5(s.rm[0])}–${ph[1].rm}% 1RM) porque a densidade é maior.`,
+    `Repetições fixas em ${ph[1].reps[1]}, dentro da faixa prescrita de ${s.reps[0]}–${s.reps[1]}.`]},
+
+ {id:'pil', nome:'Pilates (solo e aparelhos)', maxRisk:2, bloq:[], usaSeries:true, pil:true, rec:['lomb','oa','fibro','gest','op','ar'],
+  tec:['simples','isometria','excentrico'],
+  resumo:'Controle motor, respiração e resistência de molas. Baixa carga articular e boa tolerância à dor.',
+  cell:(ph,s)=>{const hi=Math.min(ph[1].reps[1],12);return `${ph[1].series} × ${Math.min(ph[1].reps[0],hi)}–${hi}<br><span class="ex-eq">molas leves a médias · PSE CR10 ${ph[1].cr10}</span>`;},
+  estrutura:(ph,s)=>[`Repetições controladas com respiração coordenada, sem apneia, até 12 por exercício.`,
+    `A resistência das molas ou do elástico substitui o %1RM: regular para manter RIR ${ph[1].rir}.`,
+    `Séries entre ${s.series[0]} e ${s.series[1]}, como na faixa sintetizada.`]},
+
+ {id:'cal', nome:'Calistenia / peso corporal', maxRisk:2, bloq:[], usaSeries:true,
+  eq:['Peso corporal','Elástico'], tec:['simples','biset','cluster','isometria','excentrico'],
+  resumo:'Progressão por alavanca e amplitude, sem equipamento. Útil para treino domiciliar.',
+  cell:(ph,s)=>`${ph[1].series} × ${ph[1].reps[0]}–${ph[1].reps[1]}<br><span class="ex-eq">PSE CR10 ${ph[1].cr10} · RIR ${ph[1].rir}</span>`,
+  estrutura:(ph,s)=>[`Sem %1RM: progredir pela alavanca (inclinação, amplitude, apoio) mantendo ${s.reps[0]}–${s.reps[1]} repetições.`,
+    `Quando passar de ${s.reps[1]} repetições com RIR ${ph[1].rir}, avançar para a variação mais difícil.`]},
+
+ {id:'aq', nome:'Aquático (hidroginástica)', maxRisk:2, bloq:[], usaSeries:true, aq:true, rec:['oa','obe','fibro','gest','ar','dap'],
+  tec:['simples','isometria','potencia'],
+  resumo:'Descarga articular e resistência da água. A FC fica 10–15 bpm abaixo da equivalente em solo.',
+  cell:(ph,s)=>`${ph[1].series} × ${ph[1].reps[1]} reps ou 30–45 s<br><span class="ex-eq">PSE CR10 ${ph[1].cr10}</span>`,
+  estrutura:(ph,s)=>[`A carga vem da velocidade e da área do implemento: regular para manter RIR ${ph[1].rir}.`,
+    `Água ao nível do processo xifoide, temperatura de 28–32 °C.`,
+    `Descontar 10–15 bpm da zona-alvo calculada em solo; a PSE é o marcador principal.`]},
+
+ {id:'conc', nome:'Concorrente (força + aeróbio)', maxRisk:2, bloq:[], usaSeries:true, tec:'todas', rec:['dm2','obe','dlp'],
+  resumo:'Força e aeróbio na mesma sessão, com ordem definida pelo objetivo principal.',
+  cell:(ph,s)=>`${ph[1].series} × ${ph[1].reps[0]}–${ph[1].reps[1]}<br><span class="ex-eq">${ph[1].rm}% 1RM, antes do aeróbio</span>`,
+  estrutura:(ph,s,hr)=>[`Força primeiro, aeróbio depois, quando o objetivo é força ou massa magra.`,
+    `Aeróbio de ${ph[1].dur} min na zona da fase atual${hr && hr.fcmax ? ` (${ph[1].bpm[0]}–${ph[1].bpm[1]} bpm)` : ''}.`,
+    `Separar as duas partes por 6–8 h sempre que a rotina permitir.`]},
+
+ {id:'cross', nome:'Crosstraining adaptado', maxRisk:1, bloq:['gest','op','ic','dac'], usaSeries:true,
+  eq:['Peso corporal','Elástico','Halter','Kettlebell','Barra'], tec:['simples','biset','potencia','cluster'],
+  resumo:'Formato EMOM e AMRAP com repetições limitadas, sem trabalho até a falha e sem levantamento olímpico.',
+  cell:(ph,s)=>`EMOM ${ph[1].series*4} min<br><span class="ex-eq">${ph[1].reps[0]} reps por minuto · ${r5(s.rm[0])}–${ph[1].rm}% 1RM</span>`,
+  estrutura:(ph,s)=>[`EMOM: a cada minuto, ${ph[1].reps[0]} repetições do exercício da estação; o tempo restante é o descanso.`,
+    `Blocos de 8–12 min, ${ph[1].series} blocos, 3 min entre blocos.`,
+    `Repetições por rodada limitadas ao piso da faixa (${s.reps[0]}) para preservar a técnica; nunca levar à falha.`]},
+
+ {id:'hyrox', nome:'Estilo HYROX (estações + deslocamento)', maxRisk:1, bloq:['gest','op','ic','dac','oa'], exige:['impacto'], usaSeries:true,
+  eq:['Peso corporal','Halter','Kettlebell'], tec:['simples','biset'],
+  resumo:'Alternância entre segmentos de deslocamento e estações de força, em ritmo contínuo.',
+  cell:(ph,s)=>`${ph[1].reps[1]} reps por estação<br><span class="ex-eq">${r5(s.rm[0])}% 1RM · ritmo contínuo</span>`,
+  estrutura:(ph,s)=>[`Alternar 200–400 m de corrida, remo ou trenó com uma estação de força.`,
+    `${ph[1].reps[1]} repetições por estação, carga leve (${r5(s.rm[0])}% 1RM), ${ph[1].series} voltas completas.`,
+    `O controle é a PSE CR10 ${ph[1].cr10}: o ritmo deve permitir terminar todas as voltas.`]},
+
+ {id:'hiit', nome:'Intervalado aeróbio (4 × 4)', maxRisk:2, bloq:['gest'], aerTeto:65, ciclico:true, usaSeries:false,
+  resumo:'Blocos longos de alta intensidade com recuperação ativa. Maior ganho de VO₂pico por sessão.',
+  cell:(ph,s,hr)=>`4 × 4 min<br><span class="ex-eq">${hr&&hr.fcmax?`${ph[2].bpm[0]}–${ph[2].bpm[1]} bpm`:`${ph[2].fcr[0]}–${ph[2].fcr[1]}% FCR`} · 3 min leves</span>`,
+  estrutura:(ph,s,hr)=>[`Aquecer 10 min, 4 blocos de 4 min no teto da faixa${hr&&hr.fcmax?` (${ph[2].bpm[0]}–${ph[2].bpm[1]} bpm)`:''}, com 3 min de recuperação ativa.`,
+    `1 a 2 sessões por semana, substituindo o contínuo, nunca em dias consecutivos.`,
+    `Teto de intensidade limitado pela condição: ${ph[2].fcr[1]}% da FCR.`]},
+
+ {id:'tabata', nome:'Tabata / HIIT ultracurto', maxRisk:1, bloq:['gest','has'], aerTeto:70, ciclico:true, usaSeries:false,
+  resumo:'Blocos de 4 min com 20 s de esforço forte e 10 s leves. Só para quem tolera intensidade vigorosa.',
+  cell:(ph,s)=>`8 × 20 s / 10 s<br><span class="ex-eq">PSE CR10 8–9 · 1–2 blocos</span>`,
+  estrutura:(ph,s,hr)=>[`Aquecer 10 min, 1 a 2 blocos de 4 min, 5 min entre blocos.`,
+    `A FC não estabiliza em esforços de 20 s: a PSE CR10 8–9 é o marcador de controle.`,
+    `Máximo de 2 sessões por semana; manter o restante do volume aeróbio em intensidade moderada.`]}
+];
+
+/* Técnicas de série — maxRisk: maior risco clínico compatível (3 aceita até alto risco) */
+const METODOS = [
+ {id:'simples', nome:'Séries tradicionais', maxRisk:3, bloq:[],
+  resumo:'Uma série por vez, com pausa completa. Base de qualquer progressão.',
+  como:'Executar todas as séries de um exercício antes de passar ao próximo.', descanso:'Conforme a tabela de força.'},
+ {id:'cluster', nome:'Cluster set (série fracionada)', maxRisk:3, bloq:[], rec:['dac','ic','idoso','op','park'],
+  resumo:'Pausas curtas dentro da série. Mantém a qualidade do movimento e reduz o pico pressórico.',
+  como:'Dividir a série em blocos de 2–3 repetições com 15–20 s de pausa entre blocos.', descanso:'2–3 min entre séries completas.'},
+ {id:'biset', nome:'Bi-set agonista/antagonista', maxRisk:3, bloq:[],
+  resumo:'Dois exercícios de grupos opostos em sequência. Economiza tempo sem somar fadiga local.',
+  como:'Parear empurrar com puxar e joelho com quadril, sem pausa entre os dois.', descanso:'90–120 s ao final do par.'},
+ {id:'isometria', nome:'Isométrico e preensão manual', maxRisk:3, bloq:[], rec:['has'],
+  resumo:'Contrações sustentadas submáximas. Preensão manual tem efeito anti-hipertensivo.',
+  como:'Preensão: 4 × 2 min a 30% da CVM, 1–3 min de intervalo, 3×/sem. Nos demais, sustentar 20–45 s sem apneia.', descanso:'1–3 min.'},
+ {id:'piramide', nome:'Pirâmide crescente', maxRisk:2, bloq:[],
+  resumo:'Carga sobe e repetições descem a cada série.',
+  como:'Ex.: 15 reps, 12 reps, 10 reps, aumentando a carga.', descanso:'90–150 s, maior nas séries mais pesadas.'},
+ {id:'potencia', nome:'Treino de potência', maxRisk:2, bloq:['gest'], rec:['idoso','park','avc'],
+  resumo:'Intenção de velocidade na fase concêntrica. Ganha função antes de ganhar massa.',
+  como:'40–60% 1RM, concêntrica o mais rápido possível (≤ 1 s), excêntrica controlada em 2–3 s.', descanso:'2–3 min, séries sem fadiga acumulada.'},
+ {id:'excentrico', nome:'Excêntrico acentuado', maxRisk:2, bloq:['fibro'], rec:['oa'],
+  resumo:'Ênfase na fase de alongamento. Útil em tendinopatia e osteoartrite.',
+  como:'Excêntrica de 4–6 s, concêntrica assistida ou bilateral.', descanso:'2 min. Esperar dor tardia nas 2 primeiras semanas.'},
+ {id:'preexaust', nome:'Pré-exaustão', maxRisk:2, bloq:['gest'],
+  resumo:'Exercício isolado antes do multiarticular do mesmo grupo.',
+  como:'Ex.: cadeira extensora seguida de leg press, sem pausa.', descanso:'90–120 s ao final do par.'},
+ {id:'superserie', nome:'Super-série do mesmo grupo', maxRisk:2, bloq:['gest','has'],
+  resumo:'Dois exercícios do mesmo grupo sem pausa. Alta fadiga local.',
+  como:'Ex.: leg press seguido de agachamento com apoio.', descanso:'2 min ao final do par.'},
+ {id:'dropset', nome:'Drop-set', maxRisk:1, bloq:['gest'],
+  resumo:'Reduzir a carga e continuar até a falha. Alto pico pressórico.',
+  como:'Aplicar apenas na última série de 1–2 exercícios, com 2 reduções de 20%.', descanso:'2–3 min após o drop.'},
+ {id:'restpause', nome:'Rest-pause', maxRisk:1, bloq:['gest'],
+  resumo:'Série levada perto da falha, pausa de 15–20 s e continuação.',
+  como:'Última série de exercícios em máquina, 2 minissérias após a pausa.', descanso:'2–3 min.'},
+ {id:'bfr', nome:'Restrição de fluxo sanguíneo (BFR)', maxRisk:1, bloq:['gest','drc','cancer','dap','dm2','dm1'],
+  resumo:'Baixa carga com oclusão parcial. Útil quando a carga alta não é tolerada.',
+  como:'20–30% 1RM, 30-15-15-15 repetições, pressão individualizada, supervisão direta.', descanso:'30–60 s entre séries, manguito liberado ao final.'}
+];
+
+const UFS = 'AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ');
+
+/* ================= ESTADO / UTIL ================= */
+const $ = id => document.getElementById(id);
+const sel = new Set();
+let usesBB = false, lastPayload = null, saved = false, adminWA = '', adminNome = 'R3H2B';
+let metodoId = 'simples', modalidadeId = 'auto', modAplicada = null, SESSION = [], SESS_PH = null;
+let faseIdx = 1, divisao = 'full';
+/* Endereço do servidor da R3H2B. Fica gravado aqui para que ninguém precise
+   configurar nada; o painel Conexão só permite trocar em caso de mudança. */
+const API_PADRAO = 'https://script.google.com/macros/s/AKfycbxVk8v8q7cgtIFHsHzL_fKmnoX10N3ux6Sp1sCfEsDO7KNIaj91jw3Pkfr2pHfxeIZx/exec';
+const HAS_GAS = typeof google !== 'undefined' && google.script && google.script.run;
+let API_URL = '';
+const HAS_API = () => !HAS_GAS && !!API_URL;
+const BACKEND = () => HAS_GAS || HAS_API();
+
+function api(action, dados){
+  return fetch(API_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(Object.assign({action: action}, dados))
+  }).then(r => r.json());
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const digits = s => String(s || '').replace(/\D/g, '');
+const r5 = n => Math.round(n / 5) * 5;
+const mid = a => (a[0] + a[1]) / 2;
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ================= INICIALIZAÇÃO ================= */
+function init(){
+  $('p_uf').innerHTML = '<option value="">—</option>' + UFS.map(u => `<option${u==='SC'?' selected':''}>${u}</option>`).join('');
+  $('bb_drug').innerHTML = BB.map((b,i) => `<option value="${i}">${b.n}</option>`).join('');
+  $('bb_ref').value = BB[0].ref;
+  $('bb_drug').addEventListener('change', () => $('bb_ref').value = BB[+$('bb_drug').value].ref);
+
+  const groups = [...new Set(CONDS.map(c => c.grupo))];
+  $('condGroups').innerHTML = groups.map(g => `
+    <div class="group-title">${g}</div>
+    <div class="chips">${CONDS.filter(c=>c.grupo===g).map(c=>`<button type="button" class="chip" data-id="${c.id}" aria-pressed="false">${c.nome}</button>`).join('')}</div>`).join('');
+  document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.id;
+    sel.has(id) ? sel.delete(id) : sel.add(id);
+    b.setAttribute('aria-pressed', sel.has(id));
+    renderSpecific(); renderModalidades();
+  }));
+  renderModalidades();
+
+  $('bbYes').onclick = () => setBB(true);
+  $('bbNo').onclick = () => setBB(false);
+  $('btnGerar').onclick = gerar;
+
+  const prof = store.get('popesp_prof');
+  if (prof) fillProf(prof, false);
+  $('p_wa').addEventListener('blur', lookupProf);
+
+  if (HAS_GAS) google.script.run.withSuccessHandler(c => { if(c && c.adminWhatsapp){ adminWA = c.adminWhatsapp; adminNome = c.adminNome || adminNome; } }).getConfig();
+  initConexao();
+}
+
+function initConexao(){
+  const cfg = store.get('popesp_conn') || {};
+  API_URL = API_PADRAO;
+  if (cfg.admin) { adminWA = digits(cfg.admin); adminNome = cfg.adminNome || adminNome; }
+  $('connAdmin').value = cfg.admin || '';
+  $('connAdminNome').value = cfg.adminNome || '';
+  $('connHint').textContent = 'As prescrições são gravadas automaticamente na planilha da R3H2B. Aqui você define apenas quem recebe a cópia por WhatsApp.';
+  $('connBtn').onclick = () => { $('connPanel').classList.toggle('open'); if ($('connPanel').classList.contains('open')) $('connPanel').scrollIntoView({block:'start'}); };
+  $('connClose').onclick = () => $('connPanel').classList.remove('open');
+  $('connSave').onclick = salvarConexao;
+  marcarConexao(HAS_GAS ? 'on' : (API_URL ? 'test' : 'off'));
+  if (!HAS_GAS && API_URL) testarConexao(true);
+}
+
+function marcarConexao(estado){
+  const dot = $('connDot');
+  dot.className = 'dot' + (estado === 'on' ? ' on' : estado === 'off' ? ' off' : '');
+  $('connBtn').title = estado === 'on' ? 'Conectado ao banco de dados' : estado === 'off' ? 'Sem conexão: as solicitações não serão gravadas' : 'Testando conexão';
+}
+
+function salvarConexao(){
+  const cfg = { admin: $('connAdmin').value.trim(), adminNome: $('connAdminNome').value.trim() };
+  store.set('popesp_conn', cfg);
+  API_URL = API_PADRAO;
+  adminWA = digits(cfg.admin); adminNome = cfg.adminNome || 'R3H2B';
+  if (HAS_GAS) { mostrarConn('ok', 'Preferências salvas. A gravação já funciona por estar dentro do Apps Script.'); marcarConexao('on'); return; }
+  testarConexao(false);
+}
+
+function testarConexao(silencioso){
+  if (!API_URL) return;
+  marcarConexao('test');
+  if (!silencioso) mostrarConn('warn', 'Testando a conexão…');
+  // Usa a mesma rota da gravação (POST), que é o que realmente precisa funcionar.
+  api('ping', {})
+    .then(r => {
+      if (r && typeof r === 'object') { marcarConexao('on'); mostrarConn('ok', 'Conectado. As prescrições serão gravadas na planilha.'); }
+      else { marcarConexao('off'); mostrarConn('bad', 'O servidor respondeu em formato inesperado. Reimplante o Apps Script com a versão mais recente do Code.gs.'); }
+    })
+    .catch(() => {
+      marcarConexao('off');
+      mostrarConn('bad', 'Não foi possível conectar ao servidor. Em Implantar → Gerenciar implantações, confirme "Executar como: Eu" e "Quem pode acessar: Qualquer pessoa".');
+    });
+}
+
+function mostrarConn(tipo, msg){
+  const el = $('connStatus');
+  el.style.display = 'block';
+  el.className = 'conn-status ' + (tipo === 'ok' ? 'ok' : tipo === 'bad' ? 'bad' : 'warn');
+  el.textContent = msg;
+}
+
+function setBB(v){
+  usesBB = v;
+  $('bbYes').setAttribute('aria-pressed', v);
+  $('bbNo').setAttribute('aria-pressed', !v);
+  $('bbFields').classList.toggle('hidden', !v);
+}
+
+function fillProf(p, flash){
+  if (p.whatsapp) $('p_wa').value = p.whatsapp;
+  if (p.nome) $('p_nome').value = p.nome;
+  if (p.conselho) $('p_conselho').value = p.conselho;
+  if (p.registro) $('p_reg').value = p.registro;
+  if (p.uf) $('p_uf').value = p.uf;
+  if (flash) { $('autofillMsg').classList.add('show'); setTimeout(()=>$('autofillMsg').classList.remove('show'), 4000); }
+}
+
+function lookupProf(){
+  const wa = digits($('p_wa').value);
+  if (wa.length < 10 || !BACKEND() || $('p_nome').value.trim()) return;
+  if (HAS_GAS) google.script.run.withSuccessHandler(p => { if (p) fillProf(p, true); }).getProfessional(wa);
+  else api('prof', {wa: wa}).then(r => { if (r && r.prof) fillProf(r.prof, true); }).catch(() => {});
+}
+
+function renderSpecific(){
+  const withFields = CONDS.filter(c => sel.has(c.id) && c.fields.length);
+  const keep = {};
+  document.querySelectorAll('#specific [data-f]').forEach(el => keep[el.id] = el.value);
+  $('specific').innerHTML = withFields.map(c => `
+    <div class="card"><h3>${c.nome}</h3><div class="grid">
+      ${c.fields.map(f => {
+        const id = `f_${c.id}_${f.id}`;
+        const input = f.type === 'select'
+          ? `<select id="${id}" data-f>${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
+          : `<input id="${id}" data-f type="number" step="any">`;
+        return `<div class="c4"><label for="${id}">${f.label}</label>${input}</div>`;
+      }).join('')}
+    </div></div>`).join('');
+  Object.entries(keep).forEach(([k,v]) => { if ($(k)) $(k).value = v; });
+}
+
+function condValues(c){
+  const v = {};
+  c.fields.forEach(f => { const el = $(`f_${c.id}_${f.id}`); v[f.id] = el ? el.value : ''; });
+  return v;
+}
+
+
+/* ================= TÉCNICAS E EXERCÍCIOS ================= */
+function condsSel(){ return CONDS.filter(c => sel.has(c.id)); }
+
+/* Restrições dependem dos dados já informados; usado também para bloquear modalidades */
+function modBloqueio(m){
+  if (m.auto) return '';
+  const list = condsSel();
+  if (!list.length) return '';
+  const maxRisk = Math.max(...list.map(c => c.risk));
+  if (maxRisk > m.maxRisk) return 'incompatível com ' + list.filter(c => c.risk > m.maxRisk).map(c => c.nome).join(', ');
+  const bl = list.filter(c => (m.bloq || []).includes(c.id));
+  if (bl.length) return 'incompatível com ' + bl.map(c => c.nome).join(', ');
+  const r = restricoes(list);
+  const ex = (m.exige || []).filter(f => r.block.has(f));
+  if (ex.length) return 'exige impacto e deslocamento, restritos neste quadro';
+  if (m.aerTeto) {
+    const teto = synth(list).aer[1];
+    if (teto < m.aerTeto) return `teto de intensidade do quadro (${teto}% FCR) abaixo do exigido`;
+  }
+  return '';
+}
+
+/* Escolha automática: prioriza segurança, depois o objetivo mais provável pelas condições */
+function escolherModalidade(){
+  const list = condsSel();
+  const livres = MODALIDADES.filter(m => !m.auto && !modBloqueio(m));
+  const ids = list.map(c => c.id);
+  const maxRisk = list.length ? Math.max(...list.map(c => c.risk)) : 1;
+  const pref = [];
+  if (maxRisk === 3) pref.push('musc','multi');
+  if (ids.some(i => ['idoso','avc','park'].includes(i))) pref.push('multi');
+  if (ids.some(i => ['lomb','fibro','ar','gest'].includes(i))) pref.push('pil');
+  if (ids.some(i => ['oa','dap'].includes(i))) pref.push('aq','pil');
+  if (ids.some(i => ['op'].includes(i))) pref.push('musc','multi');
+  if (ids.some(i => ['obe','dm2','dm1','dlp'].includes(i))) pref.push('conc','circ');
+  if (ids.some(i => ['dpoc','asma','ic'].includes(i))) pref.push('multi','musc');
+  pref.push('musc','func');
+  const escolha = pref.map(id => livres.find(m => m.id === id)).find(Boolean) || livres[0];
+  const porque = !list.length ? 'sem condições selecionadas, formato padrão.'
+    : maxRisk === 3 ? 'alto risco cardiovascular: formato com maior controle de carga e monitorização.'
+    : `selecionada a partir de ${list.map(c=>c.nome.toLowerCase()).join(', ')} e do teto de intensidade permitido.`;
+  return {mod: escolha, porque};
+}
+
+function renderModalidades(){
+  const recs = new Set();
+  condsSel().forEach(c => MODALIDADES.forEach(m => { if ((m.rec||[]).includes(c.id)) recs.add(m.id); }));
+  $('modalidades').innerHTML = MODALIDADES.map(m => {
+    const why = modBloqueio(m);
+    const rec = !why && recs.has(m.id);
+    return `<button type="button" class="chip" data-mod="${m.id}" aria-pressed="${modalidadeId===m.id}" ${why?'disabled title="'+esc(why)+'"':''}>${m.nome}${why?`<span class="why">${esc(why)}</span>`:(rec?'<span class="why">indicada para este quadro</span>':'')}</button>`;
+  }).join('');
+  if (modBloqueio(MODALIDADES.find(m=>m.id===modalidadeId) || {})) modalidadeId = 'auto';
+  document.querySelectorAll('#modalidades .chip').forEach(b => b.addEventListener('click', () => {
+    modalidadeId = b.dataset.mod;
+    document.querySelectorAll('#modalidades .chip').forEach(x => x.setAttribute('aria-pressed', x.dataset.mod === modalidadeId));
+    renderMetodos();
+  }));
+  renderMetodos();
+}
+
+function modAtual(){
+  if (modalidadeId === 'auto') return escolherModalidade().mod;
+  return MODALIDADES.find(m => m.id === modalidadeId);
+}
+
+function metodoBloqueio(m){
+  const mod = modAtual();
+  if (mod && mod.tec && mod.tec !== 'todas' && !mod.tec.includes(m.id)) return 'não se aplica a ' + mod.nome.toLowerCase();
+  const list = condsSel();
+  if (!list.length) return '';
+  const maxRisk = Math.max(...list.map(c => c.risk));
+  if (maxRisk > m.maxRisk) {
+    const quais = list.filter(c => c.risk > m.maxRisk).map(c => c.nome).join(', ');
+    return 'incompatível com ' + quais;
+  }
+  const bl = list.filter(c => (m.bloq || []).includes(c.id));
+  if (bl.length) return 'incompatível com ' + bl.map(c => c.nome).join(', ');
+  return '';
+}
+
+function renderMetodos(){
+  const mod = modAtual();
+  $('modNota').textContent = (modalidadeId === 'auto' ? `Escolha automática: ${mod.nome}. ` : '') + mod.resumo;
+  $('tecWrap').classList.toggle('hidden', !mod.usaSeries);
+  if (!mod.usaSeries) { $('metodos').innerHTML = ''; $('metodoNota').textContent = ''; return; }
+  const recs = new Set();
+  CONDS.filter(c => sel.has(c.id)).forEach(c => METODOS.forEach(m => { if ((m.rec||[]).includes(c.id)) recs.add(m.id); }));
+  $('metodos').innerHTML = METODOS.map(m => {
+    const why = metodoBloqueio(m);
+    const rec = !why && recs.has(m.id);
+    return `<button type="button" class="chip" data-m="${m.id}" aria-pressed="${metodoId===m.id}" ${why?'disabled title="'+esc(why)+'"':''}>${m.nome}${why?`<span class="why">${esc(why)}</span>`:(rec?'<span class="why">indicado para este quadro</span>':'')}</button>`;
+  }).join('');
+  if (metodoBloqueio(METODOS.find(m=>m.id===metodoId))) metodoId = 'simples';
+  document.querySelectorAll('#metodos .chip').forEach(b => b.addEventListener('click', () => {
+    metodoId = b.dataset.m;
+    document.querySelectorAll('#metodos .chip').forEach(x => x.setAttribute('aria-pressed', x.dataset.m === metodoId));
+    showMetodoNota();
+  }));
+  showMetodoNota();
+}
+
+function showMetodoNota(){
+  const m = METODOS.find(x => x.id === metodoId);
+  $('metodoNota').textContent = m ? m.resumo + ' ' + m.como : '';
+}
+
+/* Restrições de exercício a partir das condições e dos dados informados */
+function restricoes(list){
+  const block = new Set(), notas = [];
+  let maxNiv = 3;
+  const ids = list.map(c => c.id);
+  const val = {}; list.forEach(c => val[c.id] = condValues(c));
+  const add = (fs, nota) => { fs.forEach(f => block.add(f)); if (nota) notas.push(nota); };
+
+  if (list.some(c => c.valsalva)) add(['valsalva'], 'sem exercícios que induzam apneia ou pico pressórico');
+  if (list.some(c => c.risk === 3)) { add(['valsalva','impacto'], 'alto risco cardiovascular: sem impacto e sem carga axial máxima'); maxNiv = 2; }
+  if (ids.includes('ic')) add(['mmssalto'], 'insuficiência cardíaca: evitar braços sustentados acima da cabeça');
+  if (ids.includes('dac')) notas.push('pós-esternotomia recente: sem carga em membros superiores por 6–8 semanas');
+  if (ids.includes('op')) { add(['flexcol'], 'osteoporose: sem flexão de coluna com carga'); if ((val.op.fx||'').startsWith('Sim')) { add(['impacto']); if (val.op.fx === 'Sim, vertebral') add(['axial'], 'fratura vertebral: sem impacto e sem carga axial'); } }
+  if (ids.includes('lomb')) add(['flexcol'], 'lombalgia: sem flexão de coluna sob carga');
+  if (ids.includes('oa')) { add(['impacto','joelhoprof'], 'osteoartrite: sem impacto e sem flexão profunda de joelho'); }
+  if (ids.includes('obe')) add(['impacto','chao'], 'obesidade: baixo impacto e sem transições ao solo');
+  if (ids.includes('dpoc')) add(['mmssalto'], 'DPOC: evitar sustentação de braços acima da cabeça');
+  if (ids.includes('gest')) { add(['deitado','prono','impacto'], 'gestação: sem decúbito dorsal prolongado, sem prono e sem impacto'); maxNiv = 2; if (+val.gest.sem >= 20) notas.push('após 20 semanas, preferir apoio e posições verticais'); }
+  if (ids.includes('idoso')) { maxNiv = Math.min(maxNiv, 2); if (val.idoso.quedas === 'Sim') { add(['chao'], 'histórico de quedas: exercícios com apoio, sem ir ao solo'); } }
+  if (ids.includes('avc')) { maxNiv = Math.min(maxNiv, 2); add(['chao'], 'pós-AVC: preferir posições estáveis e com apoio'); }
+  if (ids.includes('park') && +val.park.hy >= 4) { add(['chao','equilibrio'], 'Hoehn & Yahr ≥ 4: exercícios sentados ou assistidos'); maxNiv = 1; }
+  if (ids.includes('dm2') && val.dm2.ret === 'Sim') add(['valsalva','impacto','flexcol'], 'retinopatia proliferativa: sem Valsalva, impacto ou cabeça abaixo do coração');
+  if (ids.includes('cancer')) { if (+val.cancer.plq && +val.cancer.plq < 50000) add(['impacto','axial'], 'plaquetopenia: sem impacto e sem carga axial'); if (val.cancer.meta === 'Sim') add(['impacto','axial','flexcol'], 'metástase óssea: sem impacto, carga axial ou flexão com carga'); }
+  if (ids.includes('drc') && val.drc.dial !== 'Não') notas.push('fístula arteriovenosa: sem carga de preensão nem aferição de PA nesse membro');
+  if (ids.includes('fibro')) maxNiv = Math.min(maxNiv, 2);
+  return {block, maxNiv, notas};
+}
+
+function repertorio(mod){
+  if (mod.pil) return EXS.filter(e => e.pil);
+  if (mod.aq) return EXS.filter(e => e.aq);
+  if (mod.dom) return EXS.filter(e => e.dom);
+  return EXS.filter(e => !e.pil && !e.aq && !e.dom && (!mod.eq || mod.eq.includes(e.eq)));
+}
+
+function montarSessao(list, s, mod){
+  const r = restricoes(list);
+  const ok = e => e.niv <= r.maxNiv && !e.f.some(f => r.block.has(f));
+  if (mod.ciclico) {
+    let pool = CICLICOS.filter(ok);
+    if (!pool.length) pool = CICLICOS.filter(e => e.niv === 1);
+    pool.sort((a,b) => a.niv - b.niv);
+    SESSION = [0,1,2].map(k => ({pad:{nome:'Estação ' + (k+1)}, pool, i:Math.min(k, pool.length-1), vistos:1, ciclico:true}));
+    return r;
+  }
+  const rep = repertorio(mod);
+  const n = s.risk === 3 ? 6 : 8;
+  SESSION = PADROES.slice(0, n).map(pad => {
+    let pool = rep.filter(e => e.p === pad.id && ok(e));
+    if (!pool.length) pool = rep.filter(e => e.p === pad.id && e.niv === 1);
+    pool.sort((a,b) => a.niv - b.niv);
+    return {pad, pool, i:0, vistos:1};
+  }).filter(row => row.pool.length);
+  return r;
+}
+
+function faseView(){ const ph = SESS_PH; return [ph[0], ph[faseIdx], ph[2]]; }
+
+function renderSess(){
+  const ph = faseView(), mod = modAplicada, m = METODOS.find(x => x.id === metodoId), f = ph[1];
+  const tb = $('sessBody'); if (!tb) return;
+  const ab = divisao === 'ab' && !mod.ciclico && SESSION.length > 3;
+  const cols = ab ? 5 : 4;
+
+  tb.innerHTML = SESSION.map((row, i) => {
+    const e = row.pool[row.i];
+    const usados = new Set(SESSION.filter((r,j) => j !== i).map(r => r.pool[r.i].n));
+    const disp = row.pool.filter(x => !usados.has(x.n)).length;
+    const fim = row.vistos >= disp;
+    const par = (mod.usaSeries && m && (m.id === 'biset' || m.id === 'preexaust')) ? 'Par ' + Math.floor(i/2 + 1) : '';
+    const dia = ab ? (i % 2 === 0 ? 'A' : 'B') : '';
+    const linha = `<tr class="${row.fix?'fixed':''}">
+      ${ab?`<td><strong>${dia}</strong></td>`:''}
+      <td><span class="padcell">${ico(row.ciclico?'ciclico':row.pad.id)}<span>${row.pad.nome}${par?`<br><span class="ex-eq">${par}</span>`:''}</span></span></td>
+      <td><span class="excell">${eqIco(e.eq)}<span><button type="button" class="exname" data-info="${i}">${esc(e.n)}</button>
+        <span class="ex-eq">${e.eq?esc(e.eq)+' · ':''}nível <span class="niv">${[1,2,3].map(k=>`<i class="${k<=e.niv?'on':''}"></i>`).join('')}</span> · ${row.pool.length>1?row.pool.length+' opções':'única opção'}</span></span></span></td>
+      <td>${mod.cell(ph, SESS_S, SESS_HR)}</td>
+      <td class="acts">
+        <button class="btn ghost sm swap" type="button" data-i="${i}" ${(fim||row.fix)?'disabled':''}>${fim?'Sem outra':'Trocar'}</button>
+        <button class="btn ghost sm fix" type="button" data-i="${i}" aria-pressed="${!!row.fix}">${row.fix?'Fixado':'Fixar'}</button>
+        <button class="btn ghost sm del" type="button" data-i="${i}">Remover</button>
+      </td></tr>`;
+    const dica = row.open ? `<tr class="dicaRow"><td colspan="${cols}">${esc(DICAS[e.n]||'')}</td></tr>` : '';
+    return linha + dica;
+  }).join('');
+
+  // estatísticas em tempo real
+  const nEx = ab ? Math.ceil(SESSION.length/2) : SESSION.length;
+  const series = nEx * f.series;
+  const tut = Math.round((f.tut[0]+f.tut[1])/2);
+  const rest = Math.round((f.rest[0]+f.rest[1])/2);
+  const tempo = Math.round((series * (tut + rest))/60) + 10;
+  const freq = ab ? Math.max(SESS_S.forcaFreq[1], 2) : SESS_S.forcaFreq[1];
+  $('sessStats').innerHTML = [
+    ['iExerc', nEx, ab?'exercícios por dia':'exercícios'],
+    ['iSeries', series, 'séries por sessão'],
+    ['iTut', tut + ' s', 'tempo sob tensão'],
+    ['iTempo', tempo + ' min', 'duração estimada'],
+    ['iSemana', series*freq, 'séries por semana']
+  ].map(x => `<div class="stat">${ico(x[0])}<span><b>${x[1]}</b><span>${x[2]}</span></span></div>`).join('');
+
+  // gráficos
+  const cargas = {};
+  SESSION.forEach(row => {
+    const w = MAPA[row.pad.id]; if (!w) return;
+    Object.entries(w).forEach(([k,v]) => cargas[k] = (cargas[k]||0) + v * f.series * freq);
+  });
+  if ($('gBody')) $('gBody').innerHTML = mod.ciclico ? '<p class="meta">Modalidade cíclica: estímulo predominantemente cardiorrespiratório.</p>' : mapaCorporal(cargas);
+  if ($('gWeek')) $('gWeek').innerHTML = semanaHTML(f, freq, ab);
+  if ($('gBars')) $('gBars').innerHTML = barrasHTML(f);
+
+  const est = $('estrutList');
+  if (est) est.innerHTML = mod.estrutura(ph, SESS_S, SESS_HR).map(x => `<li>${esc(x)}</li>`).join('');
+
+  // controles
+  document.querySelectorAll('#faseSeg button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.f === faseIdx));
+  document.querySelectorAll('#divSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.d === divisao));
+  const usadosPad = SESSION.map(r => r.pad.id);
+  const falta = PADROES.filter(x => !usadosPad.includes(x.id));
+  const addSel = $('addPad');
+  if (addSel) {
+    addSel.innerHTML = falta.length ? falta.map(x => `<option value="${x.id}">${x.nome}</option>`).join('') : '<option value="">todos já incluídos</option>';
+    addSel.disabled = !falta.length; $('btnAdd').disabled = !falta.length;
+  }
+
+  tb.querySelectorAll('.swap').forEach(b => b.addEventListener('click', () => { trocar(+b.dataset.i); }));
+  tb.querySelectorAll('.fix').forEach(b => b.addEventListener('click', () => { const r = SESSION[+b.dataset.i]; r.fix = !r.fix; renderSess(); syncPayload(); }));
+  tb.querySelectorAll('.del').forEach(b => b.addEventListener('click', () => { SESSION.splice(+b.dataset.i, 1); renderSess(); syncPayload(); }));
+  tb.querySelectorAll('.exname').forEach(b => b.addEventListener('click', () => { const r = SESSION[+b.dataset.info]; r.open = !r.open; renderSess(); }));
+}
+
+function semanaHTML(f, freqF, ab){
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const plano = [[],[],[],[],[],[],[]];
+  const diasForca = {1:[1],2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,4,5]}[Math.min(freqF,5)] || [1,3,5];
+  diasForca.forEach((d,k) => plano[d].push(ab ? (k%2===0?'A':'B') : 'F'));
+  const nA = f.freqA;
+  let passo = 7 / nA, acc = 0;
+  for (let k = 0; k < nA; k++){ plano[Math.round(acc) % 7].push('C'); acc += passo; }
+  return `<div class="week">${dias.map((d,i) => {
+    const m = plano[i];
+    return `<div class="day ${m.length?'':'off'}"><b>${d}</b><span class="marks">${m.map(x =>
+      x === 'C' ? `<span class="a" title="aeróbio">${ico('iCoracao')}</span>`
+                : `<span class="f" title="força">${ico('iForca')}</span>${x==='A'||x==='B'?`<span class="ex-eq">${x}</span>`:''}`).join('')}</span></div>`;
+  }).join('')}</div>
+  <p class="meta" style="margin:8px 0 0;font-size:13px"><span style="color:var(--sage)">força</span> ${freqF}×/sem · <span style="color:var(--amber)">aeróbio</span> ${f.freqA}×/sem de ${f.dur} min</p>`;
+}
+
+function barrasHTML(f){
+  const pct = v => Math.max(4, Math.min(100, v));
+  const linhas = [
+    ['Intensidade força', f.rm + '%', pct(f.rm), ''],
+    ['Intensidade aeróbia', f.fcr[1] + '%', pct(f.fcr[1]), 'alt'],
+    ['Volume (séries)', f.series + '', pct(f.series/5*100), ''],
+    ['Tempo sob tensão', Math.round((f.tut[0]+f.tut[1])/2) + ' s', pct((f.tut[0]+f.tut[1])/2/90*100), ''],
+    ['Descanso', Math.round((f.rest[0]+f.rest[1])/2) + ' s', pct((f.rest[0]+f.rest[1])/2/180*100), 'alt']
+  ];
+  return `<div class="bars">${linhas.map(l => `<div class="bar-row ${l[3]}"><span class="ex-eq">${l[0]}</span><span class="bar-track"><i style="width:${l[2]}%"></i></span><span class="ex-eq" style="text-align:right">${l[1]}</span></div>`).join('')}</div>`;
+}
+
+function trocar(idx){
+  const row = SESSION[idx];
+  if (row.fix) return;
+  const usados = new Set(SESSION.filter((r,j) => j !== idx).map(r => r.pool[r.i].n));
+  let t = 0;
+  do { row.i = (row.i + 1) % row.pool.length; t++; } while (usados.has(row.pool[row.i].n) && t <= row.pool.length);
+  row.vistos++;
+  renderSess(); syncPayload();
+}
+
+function sortearSessao(){
+  SESSION.forEach((row, idx) => {
+    if (row.fix || row.pool.length < 2) return;
+    const usados = new Set(SESSION.filter((r,j) => j !== idx).map(r => r.pool[r.i].n));
+    const livres = row.pool.map((e,k) => [e,k]).filter(x => !usados.has(x[0].n));
+    if (!livres.length) return;
+    row.i = livres[Math.floor(Math.random()*livres.length)][1];
+    row.vistos = 1;
+  });
+  renderSess(); syncPayload();
+}
+
+function addPadrao(){
+  const id = $('addPad').value; if (!id) return;
+  const pad = PADROES.find(x => x.id === id);
+  const r = restricoes(condsSel());
+  const rep = repertorio(modAplicada);
+  let pool = rep.filter(e => e.p === id && e.niv <= r.maxNiv && !e.f.some(x => r.block.has(x)));
+  if (!pool.length) pool = rep.filter(e => e.p === id);
+  if (!pool.length) return;
+  pool.sort((a,b) => a.niv - b.niv);
+  SESSION.push({pad, pool, i:0, vistos:1});
+  renderSess(); syncPayload();
+}
+
+function wireDash(){
+  document.querySelectorAll('#faseSeg button').forEach(b => b.addEventListener('click', () => { faseIdx = +b.dataset.f; renderSess(); syncPayload(); }));
+  document.querySelectorAll('#divSeg button').forEach(b => b.addEventListener('click', () => {
+    divisao = b.dataset.d;
+    const th = document.querySelector('#sessBody').closest('table').querySelector('thead tr');
+    const temDia = th.children[0].textContent === 'Dia';
+    if (divisao === 'ab' && !temDia) th.insertAdjacentHTML('afterbegin', '<th>Dia</th>');
+    if (divisao === 'full' && temDia) th.removeChild(th.children[0]);
+    renderSess(); syncPayload();
+  }));
+  $('btnShuffle').addEventListener('click', sortearSessao);
+  $('btnAdd').addEventListener('click', addPadrao);
+}
+
+function listaExercicios(){
+  return SESSION.map(r => `${r.pad.nome}: ${r.pool[r.i].n}`);
+}
+function syncPayload(){
+  if (!lastPayload) return;
+  lastPayload.exercicios = listaExercicios().join(' | ');
+  lastPayload.texto = lastPayload.texto.replace(/\*Sessão[\s\S]*$/, sessaoWA());
+  saved = false;
+  const b = $('btnSalvar'); if (b) { b.disabled = false; b.textContent = BACKEND() ? 'Salvar solicitação' : 'Salvar (modo teste)'; }
+  if ($('savedMsg')) $('savedMsg').textContent = '';
+  $('btnWA').disabled = true; if ($('btnAdmin')) $('btnAdmin').disabled = true;
+}
+function sessaoWA(){
+  const mod = modAplicada, m = METODOS.find(x => x.id === metodoId), ph = faseView();
+  const ab = divisao === 'ab' && !mod.ciclico && SESSION.length > 3;
+  const cell = txt => txt.replace(/<br>/g,' · ').replace(/<[^>]+>/g,'');
+  const cab = `*Sessão — ${mod.nome}${mod.usaSeries && m ? ' · ' + m.nome : ''}* (${ph[1].nome})`;
+  const linhas = SESSION.map((r,i) => `• ${ab?(i%2===0?'[A] ':'[B] '):''}${r.pool[r.i].n} — ${cell(mod.cell(ph, SESS_S, SESS_HR))}`);
+  const est = mod.estrutura(ph, SESS_S, SESS_HR).map(x => '– ' + x);
+  return [cab].concat(linhas, [''], est, mod.usaSeries && m ? ['Descanso: ' + m.descanso] : []).join('\n');
+}
+let SESS_S = null, SESS_HR = null;
+
+/* ================= CÁLCULOS ================= */
+function calcHR(idade, fcrep, te){
+  const out = { tanaka:null, fcmax:null, metodo:'', notes:[] };
+  if (!idade) return out;
+  out.tanaka = Math.round(208 - 0.7 * idade);
+  if (te) {
+    out.fcmax = te; out.metodo = 'FC pico do teste ergométrico/TCPE';
+    out.notes.push('FC pico medida em teste tem prioridade sobre qualquer fórmula.');
+  } else if (usesBB) {
+    const b = BB[+$('bb_drug').value];
+    const dose = +$('bb_dose').value || 0;
+    const refDose = +$('bb_ref').value || b.ref;
+    const f = Math.min(dose / refDose, 1);
+    const brawner = Math.round(164 - 0.7 * idade);
+    out.fcmax = Math.round(out.tanaka - f * (out.tanaka - brawner));
+    out.frac = f; out.brawner = brawner; out.bb = b.n; out.dose = dose;
+    out.metodo = `Ajustada ao betabloqueador (${Math.round(f*100)}% da dose-alvo)`;
+    out.notes.push(`${b.n} ${dose} mg/dia = ${Math.round(f*100)}% da dose-alvo de ${refDose} mg/dia.`);
+    out.notes.push(`Sem medicação (Tanaka): ${out.tanaka} bpm. Dose plena (Brawner, 164 − 0,7 × idade): ${brawner} bpm. Estimativa interpolada pela fração da dose: ${out.fcmax} bpm.`);
+    out.notes.push('Em uso de betabloqueador, a PSE (Borg) e o teste da fala são os marcadores primários; a FC é secundária.');
+  } else {
+    out.fcmax = out.tanaka; out.metodo = 'Tanaka (208 − 0,7 × idade)';
+  }
+  const oc = $('otherChrono').value;
+  if (oc) out.notes.push(`${oc} também reduz a resposta cronotrópica: a FCmáx estimada pode estar superestimada.`);
+  out.fcrep = fcrep || null;
+  return out;
+}
+const karv = (hr, p) => hr.fcrep ? Math.round(hr.fcrep + (hr.fcmax - hr.fcrep) * p / 100) : Math.round(hr.fcmax * (0.5 + p / 200));
+function borg(p){ return p < 40 ? '9–11' : p < 60 ? '12–13' : p < 70 ? '13–14' : '14–16'; }
+
+function synth(list){
+  const minLo = k => Math.min(...list.map(c=>c[k][0])), minHi = k => Math.min(...list.map(c=>c[k][1]));
+  const maxLo = k => Math.max(...list.map(c=>c[k][0])), maxHi = k => Math.max(...list.map(c=>c[k][1]));
+  const fix = (a, gap) => a[1] <= a[0] ? [a[0], a[0] + gap] : a;
+  const top = list.slice().sort((a,b)=>b.risk-a.risk)[0];
+  return {
+    risk: top.risk,
+    aer: fix([minLo('aer'), minHi('aer')], 10),
+    aerFreq: [Math.min(maxLo('aerFreq'),7), Math.min(maxHi('aerFreq'),7)],
+    aerMin: fix([minLo('aerMin'), minHi('aerMin')], 10),
+    rm: fix([minLo('rm'), minHi('rm')], 10),
+    series: fix([minLo('series'), minHi('series')], 1),
+    reps: fix([maxLo('reps'), maxHi('reps')], 2),
+    rest: [maxLo('rest'), maxHi('rest')],
+    tempo: top.tempo,
+    valsalva: list.some(c=>c.valsalva),
+    forcaFreq: [2, 3]
+  };
+}
+
+function phases(s, hr){
+  const tSum = s.tempo.split('-').reduce((a,b)=>a+ +b, 0);
+  const cr10 = s.risk === 3 ? ['2–3','3–4','4–5'] : ['3–4','5–6','6–7'];
+  const rir  = s.risk === 3 ? ['≥ 5','4–5','3–4'] : ['4–5','3–4','2–3'];
+  const ex = s.risk === 3 ? '4–8' : '6–10';
+  const m = mid(s.aer);
+  const aerR = [
+    [s.aer[0], Math.min(s.aer[0]+10, s.aer[1])],
+    [Math.max(s.aer[0], Math.round(m-5)), Math.min(s.aer[1], Math.round(m+5))],
+    [Math.max(s.aer[0], s.aer[1]-10), s.aer[1]]
+  ];
+  const ser = [s.series[0], Math.round(mid(s.series)), s.series[1]];
+  const reps = [[Math.round(mid(s.reps)), s.reps[1]], [Math.round(mid(s.reps)-1), Math.round(mid(s.reps)+1)], [s.reps[0], Math.round(mid(s.reps))]];
+  const rm = [r5(s.rm[0]), r5(mid(s.rm)), r5(s.rm[1])];
+  const dur = [s.aerMin[0], Math.round(mid(s.aerMin)), s.aerMin[1]];
+  const restP = [[s.rest[0], s.rest[1]], [s.rest[0], s.rest[1]], [Math.round(mid(s.rest)/5)*5, s.rest[1]]];
+  const names = ['Adaptação (sem. 1–4)','Desenvolvimento (sem. 5–12)','Consolidação (sem. 13+)'];
+  return names.map((n,i) => ({
+    nome:n,
+    fcr:aerR[i],
+    bpm: hr.fcmax ? [karv(hr, aerR[i][0]), karv(hr, aerR[i][1])] : null,
+    borg: borg(aerR[i][0]) === borg(aerR[i][1]) ? borg(aerR[i][0]) : `${borg(aerR[i][0])} a ${borg(aerR[i][1])}`,
+    dur: dur[i],
+    freqA: i===0 ? s.aerFreq[0] : s.aerFreq[1],
+    rm: rm[i], series: ser[i], reps: reps[i], rest: restP[i],
+    tut: [reps[i][0]*tSum, reps[i][1]*tSum],
+    cr10: cr10[i], rir: rir[i], ex,
+    volSem: [ser[i]*2, ser[i]*3]
+  }));
+}
+
+/* ================= GERAR ================= */
+function gerar(){
+  const prof = { whatsapp: digits($('p_wa').value), nome: $('p_nome').value.trim(), conselho: $('p_conselho').value, registro: $('p_reg').value.trim(), uf: $('p_uf').value };
+  const cli = { nome: $('c_nome').value.trim(), idade: +$('c_idade').value || null, sexo: $('c_sexo').value, peso: +$('c_peso').value || null, altura: +$('c_alt').value || null, fcrep: +$('c_fcrep').value || null, pas: +$('c_pas').value || null, pad: +$('c_pad').value || null };
+  const miss = [];
+  if (prof.whatsapp.length < 10) miss.push('WhatsApp do profissional');
+  if (!prof.nome) miss.push('nome do profissional');
+  if (!prof.conselho) miss.push('conselho');
+  if (!prof.registro) miss.push('nº de registro');
+  if (!prof.uf) miss.push('UF');
+  if (!cli.nome) miss.push('nome do cliente');
+  if (!cli.idade) miss.push('idade do cliente');
+  if (!sel.size) miss.push('ao menos uma condição');
+  if (usesBB && !+$('bb_dose').value) miss.push('dose do betabloqueador');
+  if (miss.length) { $('err').textContent = 'Preencha: ' + miss.join(', ') + '.'; return; }
+  $('err').textContent = '';
+  store.set('popesp_prof', prof);
+
+  const list = CONDS.filter(c => sel.has(c.id));
+  const te = +$('c_te').value || null;
+  const hr = calcHR(cli.idade, cli.fcrep, te);
+  const s = synth(list);
+  const ph = phases(s, hr);
+
+  // Alertas
+  const alerts = [];
+  if (cli.pas >= 200 || cli.pad >= 110) alerts.push(['red', `PA ${cli.pas||'—'}/${cli.pad||'—'} mmHg: não iniciar a sessão; reavaliar e encaminhar.`]);
+  else if (cli.pas >= 160 || cli.pad >= 100) alerts.push(['amber', `PA ${cli.pas||'—'}/${cli.pad||'—'} mmHg: evitar alta intensidade até controle pressórico.`]);
+  const espec = [];
+  list.forEach(c => {
+    const v = condValues(c);
+    const filled = c.fields.map(f => v[f.id] ? `${f.label}: ${v[f.id]}` : '').filter(Boolean);
+    if (filled.length) espec.push(`${c.nome} — ${filled.join('; ')}`);
+    if (c.alerts) c.alerts(v).forEach(a => alerts.push(a));
+    if (c.id === 'dac') { const isq = +v.isq; if (isq && hr.fcmax) hr.isq = isq; }
+  });
+  if (hr.isq) {
+    const teto = hr.isq - 10;
+    alerts.push(['amber', `Limiar isquêmico ${hr.isq} bpm: teto de FC no treino = ${teto} bpm.`]);
+    ph.forEach(p => { if (p.bpm) p.bpm = p.bpm.map(b => Math.min(b, teto)); });
+  }
+  if (s.valsalva) alerts.push(['amber','Evitar manobra de Valsalva: expirar na fase concêntrica em todos os exercícios.']);
+
+  const imc = cli.peso && cli.altura ? (cli.peso / Math.pow(cli.altura/100, 2)).toFixed(1) : null;
+  const protocolo = 'PE-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+  const refs = [...new Set([].concat(...list.map(c=>c.refs), [REF.guiaBR, REF.oms, 'Tanaka et al. Age-predicted maximal heart rate revisited (JACC, 2001)']).concat(usesBB ? ['Brawner et al. Predicting maximum heart rate among patients with CAD receiving β-blockade (Am Heart J, 2004)'] : []))];
+
+  SESS_PH = ph; SESS_S = s; SESS_HR = hr;
+  const auto = modalidadeId === 'auto' ? escolherModalidade() : null;
+  modAplicada = auto ? auto.mod : MODALIDADES.find(m => m.id === modalidadeId);
+  const rest = montarSessao(list, s, modAplicada);
+  if (modAplicada.usaSeries && metodoBloqueio(METODOS.find(m => m.id === metodoId))) metodoId = 'simples';
+  renderReport({prof, cli, list, hr, s, ph, alerts, imc, protocolo, refs, espec, rest, auto});
+  saved = false;
+}
+
+/* ================= RELATÓRIO ================= */
+function renderReport(d){
+  const {prof, cli, list, hr, s, ph, alerts, imc, protocolo, refs, espec, rest, auto} = d;
+  const mod = modAplicada;
+  const met = mod.usaSeries ? METODOS.find(x => x.id === metodoId) : null;
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const riskTxt = ['','Risco baixo','Risco moderado','Risco alto'];
+  const lastPh = ph[2];
+
+  // Faixa de FC
+  let hrHTML = '<p class="hr-note">Informe a idade para calcular FCmáx e zonas.</p>';
+  if (hr.fcmax) {
+    const lo = hr.fcrep ? Math.max(40, hr.fcrep - 10) : Math.round(hr.fcmax * 0.4);
+    const span = hr.fcmax - lo;
+    const pos = b => Math.max(0, Math.min(100, (b - lo) / span * 100));
+    const zones = ph.map((p,i) => p.bpm ? `<div class="zone z${i+1}" style="left:${pos(p.bpm[0])}%;width:${Math.max(1.5,pos(p.bpm[1])-pos(p.bpm[0]))}%" title="${p.nome}"></div>` : '').join('');
+    const labels = [
+      hr.fcrep ? `<span class="lbl b" style="left:${pos(hr.fcrep)}%">repouso ${hr.fcrep}</span>` : '',
+      `<span class="lbl" style="left:${pos(ph[0].bpm[0])}%">${ph[0].bpm[0]}</span>`,
+      `<span class="lbl" style="left:${pos(ph[2].bpm[1])}%">${ph[2].bpm[1]}</span>`,
+      `<span class="lbl b" style="left:100%">máx ${hr.fcmax}</span>`
+    ].join('');
+    hrHTML = `
+      <div class="hr-top">
+        <div class="hr-big">${hr.fcmax}<small>bpm FCmáx</small></div>
+        <div class="hr-note"><strong>${esc(hr.metodo)}</strong>${hr.fcrep ? ` · FC repouso ${hr.fcrep} bpm (Karvonen)` : ' · sem FC de repouso: zonas por % da FCmáx'}</div>
+      </div>
+      <div class="ribbon" role="img" aria-label="Faixa de frequência cardíaca de treino de ${ph[0].bpm[0]} a ${ph[2].bpm[1]} bpm"><div class="base"></div>${zones}${labels}</div>
+      <div class="legend"><span><i style="background:#CFE5DD"></i>Adaptação</span><span><i style="background:var(--sage-2)"></i>Desenvolvimento</span><span><i style="background:var(--sage)"></i>Consolidação</span></div>
+      ${hr.notes.length ? `<ul class="hr-note" style="margin:14px 0 0;padding-left:18px">${hr.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>` : ''}`;
+  }
+
+  const row = (label, f) => `<tr><th>${label}</th>${ph.map(p=>`<td>${f(p)}</td>`).join('')}</tr>`;
+  const head = `<thead><tr><th></th>${ph.map(p=>`<th>${p.nome}</th>`).join('')}</tr></thead>`;
+  const tAer = `<div class="tbl-wrap"><table>${head}<tbody>
+    ${row('Frequência', p=>`${p.freqA} dias/sem`)}
+    ${row('Intensidade', p=>`${p.fcr[0]}–${p.fcr[1]}% FCR${p.bpm?`<br><strong>${p.bpm[0]}–${p.bpm[1]} bpm</strong>`:''}`)}
+    ${row('PSE (Borg 6–20)', p=>p.borg)}
+    ${row('Duração', p=>`${p.dur} min/sessão`)}
+    ${row('Volume semanal', p=>`${p.dur*p.freqA} min`)}
+  </tbody></table></div>`;
+  const tForca = `<div class="tbl-wrap"><table>${head}<tbody>
+    ${row('Frequência', ()=>`${s.forcaFreq[0]}–${s.forcaFreq[1]} dias/sem, não consecutivos`)}
+    ${row('Intensidade', p=>`<strong>${p.rm}% 1RM</strong><br>PSE CR10 ${p.cr10} · RIR ${p.rir}`)}
+    ${row('Séries × reps', p=>`${p.series} × ${p.reps[0]}–${p.reps[1]}`)}
+    ${row('Exercícios', p=>`${p.ex} (multiarticulares)`)}
+    ${row('Cadência', ()=>`${s.tempo} s <br><span class="meta">conc.–isom.–exc.</span>`)}
+    ${row('Tempo sob tensão', p=>`${p.tut[0]}–${p.tut[1]} s/série`)}
+    ${row('Descanso', p=>`${p.rest[0]}–${p.rest[1]} s entre séries`)}
+    ${row('Volume semanal', p=>`${p.volSem[0]}–${p.volSem[1]} séries/grupo`)}
+  </tbody></table></div>`;
+
+  const conds = list.map(c => `
+    <details class="cond">
+      <summary><span>${c.nome}</span><span class="risk r${c.risk}">${riskTxt[c.risk]}</span></summary>
+      <div class="cond-body">
+        <dl>
+          <dt>Aeróbio</dt><dd>${c.aerFreq[0]}–${c.aerFreq[1]} d/sem · ${c.aer[0]}–${c.aer[1]}% FCR · ${c.aerMin[0]}–${c.aerMin[1]} min. ${c.aerTxt}</dd>
+          <dt>Força</dt><dd>${c.rm[0]}–${c.rm[1]}% 1RM · ${c.series[0]}–${c.series[1]} × ${c.reps[0]}–${c.reps[1]} · descanso ${c.rest[0]}–${c.rest[1]} s · cadência ${c.tempo}. ${c.forcaTxt}</dd>
+          <dt>Complementar</dt><dd>${c.extra}</dd>
+        </dl>
+        <strong>Cautelas</strong>
+        <ul>${c.cautelas.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+    </details>`).join('');
+
+  const conselhoTxt = `${prof.conselho} ${prof.registro}/${prof.uf}`;
+  $('report').innerHTML = `
+  <article class="sheet">
+    <div class="sheet-head">
+      <div>
+        <h2>${esc(cli.nome)}</h2>
+        <div class="meta">${cli.idade} anos${cli.sexo?` · ${esc(cli.sexo)}`:''}${cli.peso?` · ${cli.peso} kg`:''}${imc?` · IMC ${imc}`:''}${cli.pas?` · PA ${cli.pas}/${cli.pad||'—'} mmHg`:''}</div>
+        <div class="tags">${list.map(c=>`<span class="tag">${c.nome}</span>`).join('')}</div>
+      </div>
+      <div class="meta" style="text-align:right">
+        <div><strong>${esc(prof.nome)}</strong></div>
+        <div>${esc(conselhoTxt)}</div>
+        <div>WhatsApp ${esc(prof.whatsapp)}</div>
+        <div>${hoje} · Protocolo ${protocolo}</div>
+      </div>
+    </div>
+
+    ${alerts.length ? alerts.map(a=>`<div class="alert ${a[0]}">${esc(a[1])}</div>`).join('') : ''}
+    ${usesBB ? `<div class="alert amber">Betabloqueador: ${esc(hr.bb||'')} ${hr.dose||''} mg/dia.</div>` : ''}
+
+    <h3 class="sec">Frequência cardíaca de treino</h3>
+    <div class="hr">${hrHTML}</div>
+
+    <h3 class="sec">Estratégia macro — aeróbio</h3>
+    ${tAer}
+
+    <h3 class="sec">Estratégia macro — força</h3>
+    ${tForca}
+    <p class="meta" style="margin-top:8px">Síntese pelo limite mais conservador entre as condições selecionadas (${riskTxt[s.risk].toLowerCase()}). Progredir de fase apenas com boa tolerância: sem sintomas, PSE estável e recuperação em 24 h.</p>
+
+    <h3 class="sec">Sessão sugerida — ${esc(mod.nome)}</h3>
+    <div class="dash">
+      <div class="dash-row">
+        <div style="flex:1 1 320px"><span class="lbl">Fase do programa</span>
+          <div class="phases" id="faseSeg">${ph.map((x,i)=>`<button type="button" class="phase" data-f="${i}">
+            <span class="pw">${esc(x.nome.split('(')[1]||'').replace(')','')}</span>
+            <strong>${esc(x.nome.split(' (')[0])}</strong>
+            <span class="pbar"><i style="width:${x.rm}%"></i></span>
+            <span class="pv">${x.rm}% 1RM · ${x.series}×${x.reps[0]}–${x.reps[1]}</span></button>`).join('')}</div></div>
+        ${mod.ciclico?'':`<div><span class="lbl">Divisão</span>
+          <div class="seg" id="divSeg"><button type="button" data-d="full">Corpo inteiro</button><button type="button" data-d="ab">Dias A e B</button></div></div>`}
+        <div><span class="lbl">Montagem</span>
+          <button class="btn ghost sm" id="btnShuffle" type="button">Sugerir outra combinação</button></div>
+        <div><span class="lbl">Incluir padrão</span>
+          <span style="display:inline-flex;gap:8px"><select id="addPad" style="min-height:38px;width:auto"></select><button class="btn ghost sm" id="btnAdd" type="button">Adicionar</button></span></div>
+      </div>
+      <div class="stats" id="sessStats"></div>
+      <div class="graphs">
+        <div class="gcard"><h4>Estímulo semanal por região</h4><div id="gBody"></div><div class="legend-grad"></div>
+          <p class="meta" style="margin:5px 0 0;font-size:12px">menor ← volume semanal → maior</p></div>
+        <div class="gcard"><h4>Semana de treino</h4><div id="gWeek"></div>
+          <h4 style="margin-top:16px">Parâmetros da fase</h4><div id="gBars"></div></div>
+      </div>
+    </div>
+    <p class="meta" style="margin:0 0 10px">Toque no nome do exercício para ver a execução. Fixe os que quiser manter antes de sortear outra combinação.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr>${divisao==='ab'&&!mod.ciclico?'<th>Dia</th>':''}<th>${mod.ciclico?'Estação':'Padrão de movimento'}</th><th>${mod.ciclico?'Modalidade':'Exercício'}</th><th>Prescrição</th><th>Ações</th></tr></thead>
+      <tbody id="sessBody"></tbody>
+    </table></div>
+    <div class="method">
+      <strong>${esc(mod.nome)}</strong>${met?` com ${esc(met.nome.toLowerCase())}`:''} — ${esc(mod.resumo)}
+      <dl>
+        ${auto?`<dt>Escolha</dt><dd>Automática: ${esc(auto.porque)}</dd>`:''}
+        <dt>Estrutura</dt><dd><ul id="estrutList" style="margin:0;padding-left:18px"></ul></dd>
+        ${met?`<dt>Técnica</dt><dd>${esc(met.como)} Descanso: ${esc(met.descanso)}</dd>`:''}
+        <dt>Faixas</dt><dd>Repetições ${s.reps[0]}–${s.reps[1]} · carga ${r5(s.rm[0])}–${r5(s.rm[1])}% 1RM · séries ${s.series[0]}–${s.series[1]} · descanso ${s.rest[0]}–${s.rest[1]} s. A modalidade organiza o treino dentro dessas faixas.</dd>
+        <dt>Filtros</dt><dd>${rest.notas.length ? esc(rest.notas.join('; ')) + '.' : 'nenhuma restrição de exercício além das cautelas gerais.'} Complexidade técnica até nível ${rest.maxNiv} de 3.</dd>
+      </dl>
+    </div>
+
+    <h3 class="sec">Recomendações por condição</h3>
+    ${conds}
+    ${espec.length ? `<p class="meta"><strong>Dados informados:</strong> ${esc(espec.join(' | '))}</p>` : ''}
+
+    <h3 class="sec">Referências</h3>
+    <ol class="refs">${refs.map(r=>`<li>${esc(r)}</li>`).join('')}</ol>
+
+    <p class="disclaimer">Documento de apoio à decisão clínica, não substitui avaliação individual. Intervalos derivados das diretrizes citadas; a FCmáx ajustada ao betabloqueador é estimativa interpolada entre Tanaka e Brawner e deve ser substituída pela FC pico de teste ergométrico sob a medicação sempre que disponível. Atue dentro do escopo definido pelo seu conselho profissional (CFM, COFFITO/CREFITO, CONFEF/CREF).</p>
+    <div class="sign"><div class="line">${esc(prof.nome)} — ${esc(conselhoTxt)}</div></div>
+
+    <div class="actions report-actions">
+      <button class="btn primary" id="btnSalvar" type="button">${BACKEND() ? 'Salvar solicitação' : 'Salvar (modo teste)'}</button>
+      <button class="btn ghost" id="btnWA" type="button" disabled>Enviar para meu WhatsApp</button>
+      ${adminWA ? `<button class="btn ghost" id="btnAdmin" type="button" disabled>Enviar para ${esc(adminNome||'a cópia')}</button>` : ''}
+      <button class="btn ghost" id="btnPrint" type="button">Imprimir ou salvar PDF</button>
+      <button class="btn ghost" id="btnNovo" type="button">Nova prescrição</button>
+    </div>
+    <div class="saved" id="savedMsg"></div>
+  </article>`;
+
+  renderSess(); wireDash();
+  const texto = waText(d);
+  lastPayload = {
+    protocolo, prof,
+    cliente: { nome: cli.nome, idade: cli.idade, sexo: cli.sexo, peso: cli.peso, altura: cli.altura, fcrep: cli.fcrep, pa: cli.pas ? `${cli.pas}/${cli.pad||''}` : '' },
+    condicoes: list.map(c=>c.nome),
+    especificos: espec.join(' | '),
+    bb: usesBB ? (hr.bb || BB[+$('bb_drug').value].n) : 'Não',
+    bbDose: usesBB ? +$('bb_dose').value : '',
+    resumo: {
+      fcmax: hr.fcmax || '', metodo: hr.metodo,
+      zona: ph[0].bpm ? `${ph[0].bpm[0]}–${ph[2].bpm[1]} bpm` : '',
+      rm: `${ph[0].rm}–${lastPh.rm}%`,
+      seriesReps: `${ph[0].series}–${lastPh.series} × ${lastPh.reps[0]}–${ph[0].reps[1]}`,
+      descanso: `${s.rest[0]}–${s.rest[1]}`,
+      alertas: alerts.map(a=>a[1]).join(' | ')
+    },
+    tecnica: mod.nome + (met ? ' · ' + met.nome : ''),
+    exercicios: listaExercicios().join(' | '),
+    texto
+  };
+
+  $('btnSalvar').onclick = salvar;
+  $('btnWA').onclick = () => openWA(prof.whatsapp, texto);
+  if ($('btnAdmin')) $('btnAdmin').onclick = () => openWA(adminWA, texto);
+  $('btnPrint').onclick = () => { document.querySelectorAll('details.cond').forEach(x=>x.open=true); window.print(); };
+  $('btnNovo').onclick = novo;
+  $('report').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+}
+
+function waText(d){
+  const {prof, cli, list, hr, s, ph, alerts, protocolo} = d;
+  const L = [];
+  L.push(`*Prescrição — Populações Especiais*`);
+  L.push(`Protocolo ${protocolo} · ${new Date().toLocaleDateString('pt-BR')}`);
+  L.push(`Profissional: ${prof.nome} (${prof.conselho} ${prof.registro}/${prof.uf})`);
+  L.push('');
+  L.push(`*Cliente:* ${cli.nome}, ${cli.idade} anos`);
+  L.push(`*Condições:* ${list.map(c=>c.nome).join(', ')}`);
+  if (usesBB) L.push(`*Betabloqueador:* ${hr.bb || ''} ${hr.dose || ''} mg/dia`);
+  if (hr.fcmax) L.push(`*FCmáx:* ${hr.fcmax} bpm (${hr.metodo})`);
+  L.push('');
+  L.push('*Aeróbio*');
+  ph.forEach(p => L.push(`• ${p.nome}: ${p.freqA}x/sem, ${p.dur} min, ${p.fcr[0]}–${p.fcr[1]}% FCR${p.bpm?` (${p.bpm[0]}–${p.bpm[1]} bpm)`:''}, Borg ${p.borg}`));
+  L.push('');
+  L.push('*Força*');
+  ph.forEach(p => L.push(`• ${p.nome}: ${p.rm}% 1RM, ${p.series}×${p.reps[0]}–${p.reps[1]}, cadência ${s.tempo}, TST ${p.tut[0]}–${p.tut[1]} s, descanso ${p.rest[0]}–${p.rest[1]} s`));
+  if (alerts.length) { L.push(''); L.push('*Alertas*'); alerts.forEach(a => L.push(`⚠️ ${a[1]}`)); }
+  L.push('');
+  L.push(sessaoWA());
+  return L.join('\n');
+}
+
+function openWA(num, texto){
+  let n = digits(num);
+  if (n.length === 10 || n.length === 11) n = '55' + n;
+  window.open('https://api.whatsapp.com/send?phone=' + n + '&text=' + encodeURIComponent(texto), '_blank');
+}
+
+function salvar(){
+  if (!lastPayload || saved) return;
+  const btn = $('btnSalvar'); btn.disabled = true; btn.textContent = 'Salvando…';
+  const done = () => {
+    saved = true; btn.textContent = 'Solicitação salva';
+    $('btnWA').disabled = false; if ($('btnAdmin')) $('btnAdmin').disabled = false;
+    $('savedMsg').textContent = `Protocolo ${lastPayload.protocolo} registrado.`;
+  };
+  const falhou = e => { btn.disabled = false; btn.textContent = 'Salvar solicitação'; $('savedMsg').textContent = 'Não foi possível salvar: ' + (e && e.message ? e.message : e) + '. Tente novamente.'; };
+  if (HAS_GAS) {
+    google.script.run.withSuccessHandler(done).withFailureHandler(falhou).saveRequest(lastPayload);
+  } else if (HAS_API()) {
+    api('save', {payload: lastPayload}).then(r => { if (r && r.ok) done(); else falhou(new Error(r && r.erro ? r.erro : 'resposta inválida')); }).catch(falhou);
+  } else {
+    const log = store.get('popesp_log') || []; log.push(lastPayload); store.set('popesp_log', log); done();
+  }
+}
+
+function novo(){
+  ['c_nome','c_idade','c_peso','c_alt','c_fcrep','c_pas','c_pad','c_te','bb_dose'].forEach(id => $(id).value = '');
+  $('c_sexo').value = ''; $('otherChrono').value = '';
+  sel.clear(); document.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed','false'));
+  renderSpecific(); metodoId = 'simples'; modalidadeId = 'auto'; faseIdx = 1; divisao = 'full'; renderModalidades(); setBB(false);
+  SESSION = [];
+  $('report').innerHTML = ''; lastPayload = null; saved = false;
+  window.scrollTo({top:0});
+  $('c_nome').focus();
+}
+
+init();
+</script>
+</body>
+</html>
